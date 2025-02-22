@@ -66,7 +66,7 @@ export default async function handler(
       // Basic Info
       symbol: symbol.toUpperCase(),
       shortName: priceData.shortName || symbol.toUpperCase(),
-      longName: priceData.longName,
+      longName: priceData.longName === null ? undefined : priceData.longName,
       exchange: priceData.exchangeName || 'Unknown',
       marketState: priceData.marketState || 'UNKNOWN',
 

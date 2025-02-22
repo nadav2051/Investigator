@@ -142,3 +142,67 @@ Investigator/
 ## License
 
 MIT 
+
+## Deployment
+
+The application is optimized for deployment on Vercel, the platform created by the makers of Next.js.
+
+### Automatic Deployment (Recommended)
+
+1. **Prerequisites**
+   - A [Vercel account](https://vercel.com/signup)
+   - Your code pushed to a Git repository (GitHub, GitLab, or Bitbucket)
+
+2. **Deploy Process**
+   - Go to [Vercel's website](https://vercel.com)
+   - Click "Import Project"
+   - Select "Import Git Repository"
+   - Choose your repository
+   - Vercel will automatically detect Next.js settings
+   - Click "Deploy"
+
+3. **What You Get**
+   - Production URL (e.g., `https://your-project.vercel.app`)
+   - Automatic HTTPS
+   - Continuous deployments on git push
+   - Preview deployments for pull requests
+   - Built-in performance monitoring
+   - Edge network for fast delivery
+
+### Manual Deployment
+
+If you prefer using the command line:
+
+1. **Install Vercel CLI**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Deploy**
+   ```bash
+   vercel
+   ```
+
+3. **For Production**
+   ```bash
+   vercel --prod
+   ```
+
+### Environment Variables
+
+No environment variables are required for basic functionality. The application uses the public Yahoo Finance API.
+
+### Post-Deployment
+
+After deployment, verify these features are working:
+- Stock symbol search
+- Real-time price updates
+- Analyst recommendations
+- Historical returns
+
+### Deployment Troubleshooting
+
+Common issues and solutions:
+- If the build fails, ensure all dependencies are properly listed in `package.json`
+- If data doesn't load, check the Network tab for API call issues
+- For TypeScript errors, run `npm run build` locally first to catch any type issues 
