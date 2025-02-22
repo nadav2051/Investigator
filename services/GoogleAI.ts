@@ -78,22 +78,20 @@ class GoogleAIService {
         Text: ${post.text}
       `).join('\n')}
 
-      IMPORTANT: Your response must be valid JSON in exactly this format:
+      IMPORTANT: Respond ONLY with a JSON object in this EXACT format (no other text):
       {
-        "summary": "Brief summary here focusing on ${ticker}",
-        "overallSentiment": number between -1 and 1,
+        "summary": "Brief summary focusing on ${ticker}",
+        "overallSentiment": number,
         "ticker": "${ticker}",
         "postAnalyses": [
           {
-            "text": "post title",
-            "sentiment": number between -1 and 1,
-            "explanation": "brief explanation about ${ticker} sentiment"
+            "text": "exact post title",
+            "sentiment": number,
+            "explanation": "brief explanation"
           }
         ]
       }
-
-      Keep explanations and summaries concise. Do not include any text before or after the JSON.
-    `;
+    `.trim();
 
     try {
       const result = await this.model.generateContent(prompt);
@@ -110,32 +108,43 @@ class GoogleAIService {
           .replace(/\n```$/, '')
           .trim();
       }
+
+      console.log('AI Response:', cleanedResponse); // Debug log
       
       try {
         const analysis = JSON.parse(cleanedResponse);
         
-        // Validate the response structure
-        if (!analysis.summary || typeof analysis.overallSentiment !== 'number' || !Array.isArray(analysis.postAnalyses) || analysis.ticker !== ticker) {
-          throw new Error('Invalid response structure');
-        }
-
-        // Ensure all required fields are present and valid
-        analysis.postAnalyses.forEach((post: any, index: number) => {
-          if (!post.text || typeof post.sentiment !== 'number' || !post.explanation) {
-            throw new Error(`Invalid post analysis at index ${index}`);
-          }
-        });
-
-        // Add filtered posts information to the response
-        if (filteredPostsInfo.length > 0) {
-          analysis.filteredPosts = filteredPostsInfo;
-        }
+        // Validate and sanitize the response
+        const sanitizedAnalysis = {
+          summary: String(analysis.summary || '').slice(0, 200),
+          overallSentiment: Math.max(-1, Math.min(1, Number(analysis.overallSentiment) || 0)),
+          ticker: ticker,
+          postAnalyses: (analysis.postAnalyses || []).map((post: any, index: number) => ({
+            text: String(post.text || filteredPosts[index]?.title || ''),
+            sentiment: Math.max(-1, Math.min(1, Number(post.sentiment) || 0)),
+            explanation: String(post.explanation || '').slice(0, 100)
+          })),
+          filteredPosts: filteredPostsInfo
+        };
         
-        return analysis as AIAnalysis;
+        return sanitizedAnalysis;
       } catch (error) {
-        throw new Error(`Failed to parse AI response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.error('AI Response Parse Error:', error);
+        // Return a fallback analysis
+        return {
+          summary: `Failed to analyze ${ticker} posts due to technical issues.`,
+          overallSentiment: 0,
+          ticker,
+          postAnalyses: filteredPosts.map(post => ({
+            text: post.title,
+            sentiment: 0,
+            explanation: "Analysis failed"
+          })),
+          filteredPosts: filteredPostsInfo
+        };
       }
     } catch (error) {
+      console.error('AI Generation Error:', error);
       throw new Error(`AI analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
