@@ -37,6 +37,11 @@ export interface RedditData {
   mentionCount: number;
   lastUpdated: string;
   searchInfo: SearchInfo;
+  mentionsByDate: {
+    date: string;
+    count: number;
+    averageSentiment: number;
+  }[];
   aiAnalysis?: AIAnalysis;
 }
 

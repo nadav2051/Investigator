@@ -96,6 +96,7 @@ interface RedditData {
   mentionCount: number;
   lastUpdated: string;
   searchInfo: SearchInfo;
+  mentionsByDate: { date: string; count: number; averageSentiment: number }[];
   aiAnalysis?: {
     summary: string;
     overallSentiment: number;
@@ -286,6 +287,26 @@ export default async function handler(
       ? posts.reduce((sum, post) => sum + post.sentiment, 0) / posts.length
       : 0;
 
+    // Calculate mentions by date
+    const mentionsByDate = posts.reduce((acc: { [key: string]: { count: number; totalSentiment: number } }, post) => {
+      const date = new Date(post.created_utc * 1000).toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { count: 0, totalSentiment: 0 };
+      }
+      acc[date].count++;
+      acc[date].totalSentiment += post.sentiment;
+      return acc;
+    }, {});
+
+    // Convert to array and calculate average sentiment
+    const mentionsByDateArray = Object.entries(mentionsByDate)
+      .map(([date, { count, totalSentiment }]) => ({
+        date,
+        count,
+        averageSentiment: totalSentiment / count
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     const result: RedditData = {
       posts: posts.sort((a, b) => b.score - a.score),
       overallSentiment,
@@ -295,6 +316,7 @@ export default async function handler(
         subreddits: SUBREDDITS,
         timeframe: SEARCH_TIMEFRAME
       },
+      mentionsByDate: mentionsByDateArray,
       aiAnalysis,
       debug: {
         rawSentiments: debugSentiments

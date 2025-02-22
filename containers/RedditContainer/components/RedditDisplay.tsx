@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RedditData, RedditPost, AIAnalysis } from '../api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import MentionsGraph from './MentionsGraph';
 
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp * 1000);
@@ -186,6 +187,9 @@ const RedditDisplay: React.FC<RedditDisplayProps> = ({ data, isLoading = false }
 
       {/* AI Analysis */}
       {data.aiAnalysis && <AIAnalysisDropdown data={data.aiAnalysis} />}
+
+      {/* Mentions Graph */}
+      <MentionsGraph data={data.mentionsByDate} />
 
       {/* Stats Bar */}
       <div className="bg-white rounded-lg p-3 shadow-sm flex items-center justify-between">
