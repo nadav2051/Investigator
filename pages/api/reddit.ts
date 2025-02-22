@@ -102,7 +102,22 @@ interface RedditData {
   };
 }
 
-const SUBREDDITS = ['wallstreetbets', 'investing', 'stocks'];
+const SUBREDDITS = [
+  'wallstreetbets',      // Popular stock discussion and memes
+  'investing',           // General investing discussion
+  'stocks',             // Stock-specific discussion
+  'SecurityAnalysis',   // Value investing and fundamental analysis
+  'StockMarket',        // General stock market discussion
+  'options',            // Options trading discussion
+  'pennystocks',        // Penny stock discussion
+  'dividends',          // Dividend investing discussion
+  'ValueInvesting',     // Value investing strategies
+  'Finance',            // General finance discussion
+  'stocksandtrading',   // Trading focused discussion
+  'InvestmentClub',     // Investment ideas and strategies
+  'algotrading',        // Algorithmic trading discussion
+  'daytrading'          // Day trading strategies
+];
 const SEARCH_TIMEFRAME = '1 week';
 
 async function analyzeSentiment(text: string): Promise<{ normalized: number; raw: number; tokens: string[] }> {
@@ -193,7 +208,7 @@ export default async function handler(
         const searchResults = await reddit.getSubreddit(subreddit).search({
           query: symbol.toUpperCase(),
           time: 'week',
-          sort: 'hot'
+          sort: 'relevance'
         });
 
         for (const post of searchResults) {
