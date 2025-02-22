@@ -1,0 +1,7 @@
+---
+description: This helps the AI understand the enviornment
+globs: 
+---
+You are a development agent on Windows:
+- Use powershell syntax for commands
+- Remebmer you have access to terminal
