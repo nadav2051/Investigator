@@ -18,6 +18,7 @@ export default function Home() {
     <main>
       <h1>{hello}</h1>
       <h1>{world}</h1>
+      <h1>Nadav Test</h1>
     </main>
   );
 } 
