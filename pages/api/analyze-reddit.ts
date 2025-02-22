@@ -14,33 +14,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { symbol, posts } = req.query;
+  const { symbol } = req.query;
+  const { posts } = req.body;
 
   if (!symbol || typeof symbol !== 'string') {
     return res.status(400).json({ error: 'Symbol is required' });
   }
 
-  if (!posts || typeof posts !== 'string') {
-    return res.status(400).json({ error: 'Posts are required' });
+  if (!posts || !Array.isArray(posts)) {
+    return res.status(400).json({ error: 'Posts array is required in request body' });
   }
 
   try {
-    let parsedPosts: RedditPost[];
-    try {
-      parsedPosts = JSON.parse(posts);
-      if (!Array.isArray(parsedPosts)) {
-        throw new Error('Posts must be an array');
-      }
-    } catch (error) {
-      return res.status(400).json({ error: 'Invalid posts format' });
-    }
-
     // Limit the number of posts to analyze to prevent timeout
-    const limitedPosts = parsedPosts.slice(0, 10);
+    const limitedPosts = posts.slice(0, 10);
 
     // Get AI analysis
     const analysis = await googleAI.analyzeRedditPosts(

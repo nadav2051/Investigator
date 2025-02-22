@@ -57,7 +57,14 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
 
         try {
           const aiResponse = await fetch(
-            `/api/analyze-reddit?symbol=${searchQuery}&posts=${encodeURIComponent(JSON.stringify(data.posts))}`
+            `/api/analyze-reddit?symbol=${searchQuery}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ posts: data.posts })
+            }
           );
           
           if (!aiResponse.ok) {
