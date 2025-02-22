@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Snoowrap from 'snoowrap';
 import natural from 'natural';
+import { googleAI } from '../../services/GoogleAI';
 
 const { WordTokenizer, SentimentAnalyzer, PorterStemmer } = natural;
 const tokenizer = new WordTokenizer();
@@ -80,6 +81,7 @@ interface RedditPost {
   created_utc: number;
   sentiment: number;
   rawSentiment?: number;
+  aiSentiment?: { score: number; explanation: string };
 }
 
 interface SearchInfo {
@@ -93,6 +95,7 @@ interface RedditData {
   mentionCount: number;
   lastUpdated: string;
   searchInfo: SearchInfo;
+  aiAnalysis?: { summary: string; overallSentiment: number; isLoading: boolean };
   debug?: {
     rawSentiments: { text: string; raw: number; normalized: number; tokens: string[] }[];
   };
@@ -182,6 +185,7 @@ export default async function handler(
     const posts: RedditPost[] = [];
     const debugSentiments: { text: string; raw: number; normalized: number; tokens: string[] }[] = [];
 
+    // Collect posts first
     for (const subreddit of SUBREDDITS) {
       try {
         console.log(`Searching r/${subreddit} for ${symbol}`);
@@ -201,7 +205,7 @@ export default async function handler(
               text: text.substring(0, 100) + '...',
               raw,
               normalized,
-              tokens: tokens.slice(0, 20) // First 20 tokens for debugging
+              tokens: tokens.slice(0, 20)
             });
 
             posts.push({
@@ -221,6 +225,37 @@ export default async function handler(
       }
     }
 
+    // Get AI analysis
+    let aiAnalysis = undefined;
+    try {
+      console.log('Getting AI analysis for posts...');
+      const analysis = await googleAI.analyzeRedditPosts(
+        posts.map(post => ({
+          title: post.title,
+          text: post.selftext || ''
+        }))
+      );
+
+      // Update posts with AI sentiment
+      posts.forEach((post, i) => {
+        if (analysis.postAnalyses[i]) {
+          post.aiSentiment = {
+            score: analysis.postAnalyses[i].sentiment,
+            explanation: analysis.postAnalyses[i].explanation
+          };
+        }
+      });
+
+      aiAnalysis = {
+        summary: analysis.summary,
+        overallSentiment: analysis.overallSentiment,
+        isLoading: false
+      };
+    } catch (error) {
+      console.error('AI analysis failed:', error);
+      // Don't fail the whole request if AI analysis fails
+    }
+
     const overallSentiment = posts.length
       ? posts.reduce((sum, post) => sum + post.sentiment, 0) / posts.length
       : 0;
@@ -234,6 +269,7 @@ export default async function handler(
         subreddits: SUBREDDITS,
         timeframe: SEARCH_TIMEFRAME
       },
+      aiAnalysis,
       debug: {
         rawSentiments: debugSentiments
       }
@@ -244,6 +280,7 @@ export default async function handler(
     console.log('Average sentiment:', overallSentiment);
     console.log('Raw sentiment scores:', posts.map(p => p.rawSentiment));
     console.log('Normalized sentiment scores:', posts.map(p => p.sentiment));
+    console.log('AI analysis:', aiAnalysis ? 'success' : 'failed');
 
     res.status(200).json(result);
   } catch (error) {

@@ -8,11 +8,21 @@ export interface RedditPost {
   created_utc: number;
   sentiment: number;
   rawSentiment?: number;
+  aiSentiment?: {
+    score: number;
+    explanation: string;
+  };
 }
 
 export interface SearchInfo {
   subreddits: string[];
   timeframe: string;
+}
+
+export interface AIAnalysis {
+  summary: string;
+  overallSentiment: number;
+  isLoading?: boolean;
 }
 
 export interface RedditData {
@@ -21,6 +31,10 @@ export interface RedditData {
   mentionCount: number;
   lastUpdated: string;
   searchInfo: SearchInfo;
+  aiAnalysis?: AIAnalysis;
+  debug?: {
+    rawSentiments: { text: string; raw: number; normalized: number }[];
+  };
 }
 
 export async function fetchRedditData(symbol: string): Promise<RedditData> {

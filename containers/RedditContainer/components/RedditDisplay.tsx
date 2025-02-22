@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { RedditData, RedditPost } from '../api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
@@ -52,6 +53,42 @@ const SentimentIndicator: React.FC<{ value: number; rawValue?: number }> = ({ va
   );
 };
 
+const AIAnalysisDropdown: React.FC<{ data: RedditData['aiAnalysis'] }> = ({ data }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!data) return null;
+
+  return (
+    <div className="bg-white rounded-lg p-3 shadow-sm">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-left"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">🤖 AI Analysis</span>
+          {data.isLoading && <LoadingSpinner size="sm" />}
+        </div>
+        <span className="text-gray-400">
+          {isOpen ? '▼' : '▶'}
+        </span>
+      </button>
+      
+      {isOpen && (
+        <div className="mt-3 space-y-3">
+          <div>
+            <div className="text-sm text-gray-600 mb-1">Overall Sentiment</div>
+            <SentimentIndicator value={data.overallSentiment} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 mb-1">Summary</div>
+            <p className="text-sm text-gray-700">{data.summary}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DiscussionCard: React.FC<{ post: RedditPost }> = ({ post }) => (
   <div className="border-b border-gray-100 py-2 last:border-0">
     <div className="flex items-start justify-between gap-4">
@@ -73,6 +110,14 @@ const DiscussionCard: React.FC<{ post: RedditPost }> = ({ post }) => (
           <span>•</span>
           <span>💬{post.num_comments}</span>
         </div>
+        {post.aiSentiment && (
+          <div className="mt-2 text-xs">
+            <SentimentIndicator value={post.aiSentiment.score} />
+            <div className="text-gray-500 mt-1">
+              {post.aiSentiment.explanation}
+            </div>
+          </div>
+        )}
       </div>
       <SentimentIndicator value={post.sentiment} rawValue={post.rawSentiment} />
     </div>
@@ -96,6 +141,9 @@ const RedditDisplay: React.FC<RedditDisplayProps> = ({ data, isLoading = false }
           Last updated: {new Date(data.lastUpdated).toLocaleTimeString()}
         </div>
       </div>
+
+      {/* AI Analysis */}
+      {data.aiAnalysis && <AIAnalysisDropdown data={data.aiAnalysis} />}
 
       {/* Stats Bar */}
       <div className="bg-white rounded-lg p-3 shadow-sm flex items-center justify-between">
