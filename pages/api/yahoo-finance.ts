@@ -147,7 +147,7 @@ export default async function handler(
         title: article.title,
         link: article.link,
         publisher: article.publisher,
-        publishedAt: article.providerPublishTime,
+        publishedAt: new Date(article.providerPublishTime).toISOString(),
         summary: undefined,
         thumbnail: article.thumbnail?.resolutions?.[0]?.url,
         sentiment: determineSentiment(article.title)
