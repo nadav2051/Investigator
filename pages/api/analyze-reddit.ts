@@ -6,6 +6,10 @@ interface RedditPost {
   selftext?: string;
 }
 
+export const config = {
+  maxDuration: 300 // Set maximum duration to 5 minutes for AI analysis
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -14,24 +18,33 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { symbol } = req.query;
+  const { symbol, posts } = req.query;
 
   if (!symbol || typeof symbol !== 'string') {
     return res.status(400).json({ error: 'Symbol is required' });
   }
 
-  try {
-    // Get posts from Reddit API first
-    const redditResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/reddit?symbol=${symbol}`);
-    const redditData = await redditResponse.json();
+  if (!posts || typeof posts !== 'string') {
+    return res.status(400).json({ error: 'Posts are required' });
+  }
 
-    if (!redditData.posts || !Array.isArray(redditData.posts)) {
-      throw new Error('No posts found to analyze');
+  try {
+    let parsedPosts: RedditPost[];
+    try {
+      parsedPosts = JSON.parse(posts);
+      if (!Array.isArray(parsedPosts)) {
+        throw new Error('Posts must be an array');
+      }
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid posts format' });
     }
+
+    // Limit the number of posts to analyze to prevent timeout
+    const limitedPosts = parsedPosts.slice(0, 10);
 
     // Get AI analysis
     const analysis = await googleAI.analyzeRedditPosts(
-      redditData.posts.map((post: RedditPost) => ({
+      limitedPosts.map(post => ({
         title: post.title,
         text: post.selftext || ''
       })),
@@ -43,7 +56,8 @@ export default async function handler(
       overallSentiment: analysis.overallSentiment,
       ticker: analysis.ticker,
       isLoading: false,
-      filteredPosts: analysis.filteredPosts
+      filteredPosts: analysis.filteredPosts,
+      postAnalyses: analysis.postAnalyses
     });
   } catch (error) {
     console.error('AI analysis error:', error);

@@ -27,22 +27,23 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       try {
-        if (!process.env.NEXT_PUBLIC_REDDIT_CLIENT_ID ||
-            !process.env.NEXT_PUBLIC_REDDIT_CLIENT_SECRET ||
-            !process.env.NEXT_PUBLIC_REDDIT_REFRESH_TOKEN) {
-          throw new Error('Missing Reddit API credentials');
-        }
-
+        // First fetch Reddit data
         const data = await fetchRedditData(searchQuery);
         if (!data) {
           throw new Error('No data received from Reddit API');
         }
 
+        // Set initial data without AI analysis
         setState(prev => ({ 
           ...prev, 
-          loading: false, 
+          loading: false,
+          data
+        }));
+
+        // Then fetch AI analysis separately
+        setState(prev => ({ 
+          ...prev, 
           aiLoading: true,
-          error: null, 
           data: {
             ...data,
             aiAnalysis: { 
@@ -55,14 +56,31 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
         }));
 
         try {
-          const aiData = await fetch(`/api/analyze-reddit?symbol=${searchQuery}`);
-          const aiAnalysis = await aiData.json();
+          const aiResponse = await fetch(
+            `/api/analyze-reddit?symbol=${searchQuery}&posts=${encodeURIComponent(JSON.stringify(data.posts))}`
+          );
           
+          if (!aiResponse.ok) {
+            throw new Error('AI analysis failed');
+          }
+
+          const aiAnalysis = await aiResponse.json();
+          
+          // Update posts with AI sentiment
+          const updatedPosts = data.posts.map((post, i) => ({
+            ...post,
+            aiSentiment: aiAnalysis.postAnalyses?.[i] ? {
+              score: aiAnalysis.postAnalyses[i].sentiment,
+              explanation: aiAnalysis.postAnalyses[i].explanation
+            } : undefined
+          }));
+
           setState(prev => ({
             ...prev,
             aiLoading: false,
             data: prev.data ? {
               ...prev.data,
+              posts: updatedPosts,
               aiAnalysis: {
                 ...aiAnalysis,
                 isLoading: false
@@ -70,6 +88,7 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
             } : null
           }));
         } catch (error) {
+          console.error('AI analysis error:', error);
           setState(prev => ({
             ...prev,
             aiLoading: false,

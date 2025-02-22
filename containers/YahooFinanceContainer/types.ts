@@ -50,6 +50,17 @@ export interface StockData {
     dayChangePercent: number;
   };
 
+  // News Articles
+  newsArticles?: {
+    title: string;
+    link: string;
+    publisher: string;
+    publishedAt: string;
+    summary?: string;
+    sentiment?: 'positive' | 'negative' | 'neutral';
+    thumbnail?: string;
+  }[];
+
   lastUpdated: string;
 }
 

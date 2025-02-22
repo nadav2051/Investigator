@@ -110,20 +110,11 @@ interface RedditData {
 }
 
 const SUBREDDITS = [
-  'wallstreetbets',      // Popular stock discussion and memes
-  'investing',           // General investing discussion
-  'stocks',             // Stock-specific discussion
-  'SecurityAnalysis',   // Value investing and fundamental analysis
-  'StockMarket',        // General stock market discussion
-  'options',            // Options trading discussion
-  'pennystocks',        // Penny stock discussion
-  'dividends',          // Dividend investing discussion
-  'ValueInvesting',     // Value investing strategies
-  'Finance',            // General finance discussion
-  'stocksandtrading',   // Trading focused discussion
-  'InvestmentClub',     // Investment ideas and strategies
-  'algotrading',        // Algorithmic trading discussion
-  'daytrading'          // Day trading strategies
+  'wallstreetbets',
+  'stocks',
+  'investing',
+  'StockMarket',
+  'options'
 ];
 const SEARCH_TIMEFRAME = '1 week';
 
@@ -205,84 +196,65 @@ export default async function handler(
       refreshToken: process.env.NEXT_PUBLIC_REDDIT_REFRESH_TOKEN!
     });
 
+    // Set shorter timeout for Reddit API calls
+    reddit.config({ requestTimeout: 8000 });
+
     const posts: RedditPost[] = [];
     const debugSentiments: { text: string; raw: number; normalized: number; tokens: string[] }[] = [];
 
-    // Collect posts first
-    for (const subreddit of SUBREDDITS) {
-      try {
-        console.log(`Searching r/${subreddit} for ${symbol}`);
-        const searchResults = await reddit.getSubreddit(subreddit).search({
-          query: symbol.toUpperCase(),
-          time: 'week',
-          sort: 'relevance'
-        });
+    // Use Promise.all to fetch posts in parallel with a timeout
+    const searchPromises = SUBREDDITS.map(subreddit => {
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout')), 8000);
+      });
 
-        for (const post of searchResults) {
-          const symbolRegex = new RegExp(`\\b${symbol}\\b`, 'i');
-          if (symbolRegex.test(post.title) || symbolRegex.test(post.selftext)) {
-            const text = post.title + ' ' + post.selftext;
-            const { normalized, raw, tokens } = await analyzeSentiment(text);
-            
-            debugSentiments.push({
-              text: text.substring(0, 100) + '...',
-              raw,
-              normalized,
-              tokens: tokens.slice(0, 20)
-            });
-
-            posts.push({
-              subreddit: post.subreddit.display_name,
-              title: post.title,
-              selftext: post.selftext,
-              url: post.url,
-              score: post.score,
-              num_comments: post.num_comments,
-              created_utc: post.created_utc,
-              sentiment: normalized,
-              rawSentiment: raw
-            });
-          }
-        }
-      } catch (error) {
+      const searchPromise = reddit.getSubreddit(subreddit).search({
+        query: symbol.toUpperCase(),
+        time: 'week',
+        sort: 'relevance',
+        limit: 10 // Limit results per subreddit
+      }).catch(error => {
         console.error(`Error searching r/${subreddit}:`, error);
+        return [];
+      });
+
+      return Promise.race([searchPromise, timeoutPromise])
+        .catch(() => []);
+    });
+
+    const searchResults = await Promise.all(searchPromises);
+
+    // Process posts
+    for (const results of searchResults) {
+      for (const post of results) {
+        const symbolRegex = new RegExp(`\\b${symbol}\\b`, 'i');
+        if (symbolRegex.test(post.title) || symbolRegex.test(post.selftext)) {
+          const text = post.title + ' ' + post.selftext;
+          const { normalized, raw, tokens } = await analyzeSentiment(text);
+          
+          posts.push({
+            subreddit: post.subreddit.display_name,
+            title: post.title,
+            selftext: post.selftext,
+            url: post.url,
+            score: post.score,
+            num_comments: post.num_comments,
+            created_utc: post.created_utc,
+            sentiment: normalized,
+            rawSentiment: raw
+          });
+
+          debugSentiments.push({
+            text: text.substring(0, 100) + '...',
+            raw,
+            normalized,
+            tokens: tokens.slice(0, 20)
+          });
+        }
       }
     }
 
-    // Get AI analysis
-    let aiAnalysis = undefined;
-    try {
-      console.log('Getting AI analysis for posts...');
-      const analysis = await googleAI.analyzeRedditPosts(
-        posts.map(post => ({
-          title: post.title,
-          text: post.selftext || ''
-        })),
-        symbol.toUpperCase()
-      );
-
-      // Update posts with AI sentiment
-      posts.forEach((post, i) => {
-        if (analysis.postAnalyses[i]) {
-          post.aiSentiment = {
-            score: analysis.postAnalyses[i].sentiment,
-            explanation: analysis.postAnalyses[i].explanation
-          };
-        }
-      });
-
-      aiAnalysis = {
-        summary: analysis.summary,
-        overallSentiment: analysis.overallSentiment,
-        isLoading: false,
-        ticker: symbol.toUpperCase(),
-        filteredPosts: analysis.filteredPosts
-      };
-    } catch (error) {
-      console.error('AI analysis failed:', error);
-      // Don't fail the whole request if AI analysis fails
-    }
-
+    // Calculate basic metrics without waiting for AI analysis
     const overallSentiment = posts.length
       ? posts.reduce((sum, post) => sum + post.sentiment, 0) / posts.length
       : 0;
@@ -298,7 +270,6 @@ export default async function handler(
       return acc;
     }, {});
 
-    // Convert to array and calculate average sentiment
     const mentionsByDateArray = Object.entries(mentionsByDate)
       .map(([date, { count, totalSentiment }]) => ({
         date,
@@ -307,6 +278,7 @@ export default async function handler(
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Return initial response without AI analysis
     const result: RedditData = {
       posts: posts.sort((a, b) => b.score - a.score),
       overallSentiment,
@@ -317,18 +289,10 @@ export default async function handler(
         timeframe: SEARCH_TIMEFRAME
       },
       mentionsByDate: mentionsByDateArray,
-      aiAnalysis,
       debug: {
         rawSentiments: debugSentiments
       }
     };
-
-    console.log('\nSentiment Analysis Summary:');
-    console.log('Total posts analyzed:', posts.length);
-    console.log('Average sentiment:', overallSentiment);
-    console.log('Raw sentiment scores:', posts.map(p => p.rawSentiment));
-    console.log('Normalized sentiment scores:', posts.map(p => p.sentiment));
-    console.log('AI analysis:', aiAnalysis ? 'success' : 'failed');
 
     res.status(200).json(result);
   } catch (error) {

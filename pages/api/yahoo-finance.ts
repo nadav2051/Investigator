@@ -20,7 +20,7 @@ export default async function handler(
     }
 
     // If quote works, proceed with full data fetch
-    const [quoteSummary, historical] = await Promise.all([
+    const [quoteSummary, historical, news] = await Promise.all([
       yahooFinance.quoteSummary(symbol, {
         modules: ['price', 'summaryDetail', 'defaultKeyStatistics', 'recommendationTrend', 'financialData']
       }),
@@ -28,6 +28,11 @@ export default async function handler(
         period1: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
         period2: new Date(),
         interval: '1d'
+      }),
+      yahooFinance.search(symbol, { 
+        newsCount: 5, // Get 5 latest news articles
+        enableNavLinks: true,
+        enableEnhancedTrivialQuery: true
       })
     ]);
 
@@ -111,6 +116,19 @@ export default async function handler(
 
       // Returns Data
       returns,
+
+      // Add news articles
+      newsArticles: news.news?.map(article => ({
+        title: article.title,
+        link: article.link,
+        publisher: article.publisher,
+        publishedAt: new Date(article.providerPublishTime * 1000).toISOString(),
+        summary: article.summary,
+        thumbnail: article.thumbnail?.resolutions?.[0]?.url,
+        // Simple sentiment analysis based on title and summary
+        sentiment: determineSentiment(article.title + ' ' + (article.summary || ''))
+      })) || [],
+
       lastUpdated: new Date().toISOString()
     };
 
@@ -122,4 +140,26 @@ export default async function handler(
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
+}
+
+// Simple sentiment analysis function
+function determineSentiment(text: string): 'positive' | 'negative' | 'neutral' {
+  const lowerText = text.toLowerCase();
+  const positiveWords = ['up', 'rise', 'gain', 'bull', 'growth', 'positive', 'beat', 'higher', 'surge', 'jump'];
+  const negativeWords = ['down', 'fall', 'drop', 'bear', 'decline', 'negative', 'miss', 'lower', 'plunge', 'sink'];
+
+  let positiveCount = 0;
+  let negativeCount = 0;
+
+  positiveWords.forEach(word => {
+    if (lowerText.includes(word)) positiveCount++;
+  });
+
+  negativeWords.forEach(word => {
+    if (lowerText.includes(word)) negativeCount++;
+  });
+
+  if (positiveCount > negativeCount) return 'positive';
+  if (negativeCount > positiveCount) return 'negative';
+  return 'neutral';
 } 

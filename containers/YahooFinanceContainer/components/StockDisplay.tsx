@@ -1,5 +1,6 @@
 import { StockData } from '../types';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import NewsArticles from './NewsArticles';
 
 const formatNumber = (num: number, decimals: number = 2): string => {
   return new Intl.NumberFormat('en-US', {
@@ -204,6 +205,17 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
           </div>
         </div>
       </div>
+
+      {/* News Articles */}
+      {data.newsArticles && data.newsArticles.length > 0 && (
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-semibold text-gray-900">Latest News</h4>
+            {isLoading && <LoadingSpinner size="sm" />}
+          </div>
+          <NewsArticles articles={data.newsArticles} isLoading={isLoading} />
+        </div>
+      )}
 
       <div className="text-xs text-gray-500 text-right">
         Last updated: {new Date(data.lastUpdated).toLocaleString()}
