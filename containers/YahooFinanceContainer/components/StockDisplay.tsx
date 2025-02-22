@@ -1,4 +1,4 @@
-import { StockDisplayProps, StockData } from '../types';
+import { StockData } from '../types';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const formatNumber = (num: number, decimals: number = 2): string => {
@@ -95,7 +95,12 @@ const AnalystRatings: React.FC<{ ratings: NonNullable<StockData['analystRatings'
   );
 };
 
-const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
+interface StockDisplayProps {
+  data: StockData;
+  isLoading?: boolean;
+}
+
+const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) => {
   return (
     <div className="space-y-4 font-inter">
       {/* Header - More Compact */}
@@ -117,7 +122,7 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
           <div className="text-right">
             <div className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
               {formatCurrency(data.currentPrice, data.currency)}
-              <LoadingSpinner size="sm" className="opacity-30" />
+              {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
             <ReturnIndicator value={data.returns.dayChangePercent} />
           </div>
@@ -146,7 +151,7 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold text-gray-900">Market Metrics</h4>
-              <LoadingSpinner size="sm" className="opacity-30" />
+              {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
             <div className="grid grid-cols-3 gap-3 text-sm">
               {data.trailingPE && (
@@ -178,7 +183,7 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-gray-900">Analyst Recommendations</h4>
-                <LoadingSpinner size="sm" className="opacity-30" />
+                {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
               </div>
               <AnalystRatings ratings={data.analystRatings} currency={data.currency} />
             </div>
@@ -188,7 +193,7 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold text-gray-900">Returns</h4>
-              <LoadingSpinner size="sm" className="opacity-30" />
+              {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <ReturnIndicator value={data.returns.oneMonth} label="1M" />

@@ -18,24 +18,41 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   });
 
   useEffect(() => {
-    if (!searchQuery) return;
+    if (!searchQuery) {
+      setState({ loading: false, error: null, data: null });
+      return;
+    }
 
     const loadData = async () => {
       setState(prev => ({ ...prev, loading: true, error: null }));
       try {
         const data = await fetchStockData(searchQuery);
-        setState(prev => ({ ...prev, data, loading: false }));
+        if (!data) {
+          throw new Error('No data received');
+        }
+        setState({ loading: false, error: null, data });
       } catch (error) {
-        setState(prev => ({
-          ...prev,
+        setState({
+          loading: false,
           error: error instanceof Error ? error.message : 'Failed to fetch stock data',
-          loading: false
-        }));
+          data: null
+        });
       }
     };
 
     loadData();
   }, [searchQuery]);
+
+  if (!searchQuery) {
+    return (
+      <div className="p-4 border rounded-lg shadow-sm bg-white">
+        <h2 className="text-xl font-semibold mb-4">Stock Information</h2>
+        <div className="text-gray-500 text-center py-8">
+          Enter a stock symbol to view detailed information
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 border rounded-lg shadow-sm bg-white">
@@ -43,14 +60,8 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
         <h2 className="text-xl font-semibold">Stock Information</h2>
         {state.loading && <LoadingSpinner size="sm" />}
       </div>
-      
-      {!searchQuery && (
-        <div className="text-gray-500 text-center py-8">
-          Enter a stock symbol to view detailed information
-        </div>
-      )}
 
-      {searchQuery && state.loading && (
+      {state.loading && !state.data && (
         <LoadingOverlay message={`Loading data for ${searchQuery.toUpperCase()}...`} />
       )}
 
@@ -61,8 +72,8 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
         </div>
       )}
 
-      {!state.loading && !state.error && state.data && (
-        <StockDisplay data={state.data} />
+      {state.data && (
+        <StockDisplay data={state.data} isLoading={state.loading} />
       )}
     </div>
   );
