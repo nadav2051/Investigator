@@ -1,24 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import SearchBar from '../components/SearchBar';
+import YahooFinanceConfig from '../containers/YahooFinanceContainer';
+import type { ContainerComponent } from '../types/container';
+
+// Register all available containers
+const containers: ContainerComponent[] = [
+  YahooFinanceConfig,
+  // Add more containers here as they're created
+];
 
 export default function Home() {
-  const [hello, setHello] = useState('');
-  const [world, setWorld] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/hello').then(r => r.text()),
-      fetch('/api/world').then(r => r.text())
-    ]).then(([h, w]) => {
-      setHello(h);
-      setWorld(w);
-    });
-  }, []);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
 
   return (
-    <main>
-      <h1>{hello}</h1>
-      <h1>{world}</h1>
-      <h1>Nadav Test</h1>
+    <main className="min-h-screen bg-background font-inter">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <h1 className="text-4xl font-bold text-text mb-8">Stock Information</h1>
+        <SearchBar onSearch={handleSearch} />
+        <div className="mt-8 space-y-8">
+          {containers.map(({ title, Component }) => (
+            <Component key={title} searchQuery={searchQuery} />
+          ))}
+        </div>
+      </div>
     </main>
   );
 } 
