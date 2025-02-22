@@ -1,4 +1,5 @@
 import { StockDisplayProps, StockData } from '../types';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const formatNumber = (num: number, decimals: number = 2): string => {
   return new Intl.NumberFormat('en-US', {
@@ -55,6 +56,12 @@ const MetricCard: React.FC<{
   </div>
 );
 
+const SectionLoading: React.FC = () => (
+  <div className="flex items-center justify-center h-32">
+    <LoadingSpinner size="md" />
+  </div>
+);
+
 const AnalystRatings: React.FC<{ ratings: NonNullable<StockData['analystRatings']>; currency: string }> = ({ ratings, currency }) => {
   const total = ratings.total || 1; // Prevent division by zero
   const getWidth = (count: number) => `${(count / total) * 100}%`;
@@ -108,8 +115,9 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
             <div className="text-sm text-gray-600">{data.longName || data.shortName}</div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-semibold text-gray-900">
+            <div className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
               {formatCurrency(data.currentPrice, data.currency)}
+              <LoadingSpinner size="sm" className="opacity-30" />
             </div>
             <ReturnIndicator value={data.returns.dayChangePercent} />
           </div>
@@ -136,7 +144,10 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
 
           {/* Market Metrics */}
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Market Metrics</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-gray-900">Market Metrics</h4>
+              <LoadingSpinner size="sm" className="opacity-30" />
+            </div>
             <div className="grid grid-cols-3 gap-3 text-sm">
               {data.trailingPE && (
                 <div>
@@ -165,14 +176,20 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data }) => {
           {/* Analyst Ratings */}
           {data.analystRatings && (
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Analyst Recommendations</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-900">Analyst Recommendations</h4>
+                <LoadingSpinner size="sm" className="opacity-30" />
+              </div>
               <AnalystRatings ratings={data.analystRatings} currency={data.currency} />
             </div>
           )}
 
           {/* Returns */}
           <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Returns</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-gray-900">Returns</h4>
+              <LoadingSpinner size="sm" className="opacity-30" />
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <ReturnIndicator value={data.returns.oneMonth} label="1M" />
               <ReturnIndicator value={data.returns.sixMonths} label="6M" />
