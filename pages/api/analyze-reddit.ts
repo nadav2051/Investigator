@@ -7,7 +7,7 @@ interface RedditPost {
 }
 
 export const config = {
-  maxDuration: 300 // Set maximum duration to 5 minutes for AI analysis
+  maxDuration: 60 // Set maximum duration to 60 seconds (maximum allowed for hobby plan)
 };
 
 export default async function handler(
