@@ -48,7 +48,8 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
             aiAnalysis: { 
               summary: "Loading AI analysis...",
               overallSentiment: 0,
-              isLoading: true
+              isLoading: true,
+              ticker: searchQuery.toUpperCase()
             }
           }
         }));
