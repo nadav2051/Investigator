@@ -76,8 +76,34 @@ const AIAnalysisDropdown = ({ data }: { data: AIAnalysis }) => {
         <div className="p-4 border-t">
           <div className="mb-4">
             <div className="font-medium mb-2">Overall Sentiment Score</div>
-            <div className="text-lg font-semibold text-primary">
-              {typeof data.overallSentiment === 'number' ? data.overallSentiment.toFixed(2) : 'N/A'}
+            <div className="flex items-center gap-4">
+              <div className="text-lg font-semibold text-primary">
+                {typeof data.overallSentiment === 'number' ? data.overallSentiment.toFixed(2) : 'N/A'}
+              </div>
+              <div className="text-sm">
+                {typeof data.overallSentiment === 'number' && (
+                  <span className={`px-2 py-1 rounded-full ${
+                    data.overallSentiment > 0.5 ? 'bg-green-100 text-green-800' :
+                    data.overallSentiment > 0.2 ? 'bg-green-50 text-green-600' :
+                    data.overallSentiment < -0.5 ? 'bg-red-100 text-red-800' :
+                    data.overallSentiment < -0.2 ? 'bg-red-50 text-red-600' :
+                    'bg-yellow-50 text-yellow-600'
+                  }`}>
+                    {data.overallSentiment > 0.5 ? 'Very Bullish' :
+                     data.overallSentiment > 0.2 ? 'Bullish' :
+                     data.overallSentiment < -0.5 ? 'Very Bearish' :
+                     data.overallSentiment < -0.2 ? 'Bearish' :
+                     'Neutral'}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-2">
+              <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full">{'>'} 0.5: Very Bullish</span>
+              <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full">{'>'} 0.2: Bullish</span>
+              <span className="bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded-full">-0.2 to 0.2: Neutral</span>
+              <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full">{'<'} -0.2: Bearish</span>
+              <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full">{'<'} -0.5: Very Bearish</span>
             </div>
           </div>
           
