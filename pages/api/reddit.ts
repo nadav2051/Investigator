@@ -96,7 +96,13 @@ interface RedditData {
   mentionCount: number;
   lastUpdated: string;
   searchInfo: SearchInfo;
-  aiAnalysis?: { summary: string; overallSentiment: number; isLoading: boolean };
+  aiAnalysis?: {
+    summary: string;
+    overallSentiment: number;
+    isLoading: boolean;
+    ticker: string;
+    filteredPosts?: { title: string; reason: string; }[];
+  };
   debug?: {
     rawSentiments: { text: string; raw: number; normalized: number; tokens: string[] }[];
   };
@@ -250,7 +256,8 @@ export default async function handler(
         posts.map(post => ({
           title: post.title,
           text: post.selftext || ''
-        }))
+        })),
+        symbol.toUpperCase()
       );
 
       // Update posts with AI sentiment
@@ -266,7 +273,9 @@ export default async function handler(
       aiAnalysis = {
         summary: analysis.summary,
         overallSentiment: analysis.overallSentiment,
-        isLoading: false
+        isLoading: false,
+        ticker: symbol.toUpperCase(),
+        filteredPosts: analysis.filteredPosts
       };
     } catch (error) {
       console.error('AI analysis failed:', error);
