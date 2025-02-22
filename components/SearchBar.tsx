@@ -5,49 +5,26 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ onSearch }: SearchBarProps) => {
-  console.log('🔄 SearchBar rendering');
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: FormEvent) => {
-    console.log('🔍 Form submit event triggered');
     e.preventDefault();
-    if (!query.trim()) {
-      console.log('⚠️ Empty query, skipping search');
-      return;
-    }
-    console.log('🔍 SearchBar submitting query:', query);
+    if (!query.trim()) return;
     onSearch(query.trim().toUpperCase());
   };
 
   const handleButtonClick = () => {
-    console.log('🔘 Search button clicked');
-    if (!query.trim()) {
-      console.log('⚠️ Empty query, skipping search');
-      return;
-    }
-    console.log('🔍 SearchBar submitting query (via button):', query);
+    if (!query.trim()) return;
     onSearch(query.trim().toUpperCase());
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value;
-    console.log('⌨️ SearchBar input changed:', newQuery);
-    setQuery(newQuery);
-  };
-
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="w-full"
-      onClick={() => console.log('📝 Form clicked')}
-    >
+    <form onSubmit={handleSubmit} className="w-full">
       <div className="flex gap-4">
         <input
           type="text"
           value={query}
-          onChange={handleChange}
-          onClick={() => console.log('📝 Input clicked')}
-          onFocus={() => console.log('📝 Input focused')}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Enter stock symbol (e.g., AAPL, MSFT, GOOGL)..."
           className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-white text-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />

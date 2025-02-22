@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from '../components/SearchBar';
+import SearchHistory from '../components/SearchHistory';
 import YahooFinanceConfig from '../containers/YahooFinanceContainer';
 import RedditConfig from '../containers/RedditContainer';
 import type { ContainerComponent } from '../types/container';
@@ -11,28 +12,37 @@ const containers: ContainerComponent[] = [
   // Add more containers here as they're created
 ];
 
+const MAX_HISTORY = 5;
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
-  const handleSearch = (query: string) => {
-    // Ensure query is properly formatted and not empty
-    const formattedQuery = query.trim().toUpperCase();
-    console.log('Search triggered:', { raw: query, formatted: formattedQuery });
-    
-    if (!formattedQuery) {
-      console.log('Empty query, skipping update');
-      return;
+  // Load search history on mount
+  useEffect(() => {
+    const history = localStorage.getItem('searchHistory');
+    if (history) {
+      setSearchHistory(JSON.parse(history));
     }
+  }, []);
 
-    setSearchQuery(formattedQuery);
+  const addToHistory = (query: string) => {
+    const newHistory = [
+      query,
+      ...searchHistory.filter(s => s !== query)
+    ].slice(0, MAX_HISTORY);
+
+    setSearchHistory(newHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(newHistory));
   };
 
-  // Debug render
-  console.log('Home rendering:', {
-    hasQuery: !!searchQuery,
-    query: searchQuery,
-    containers: containers.map(c => c.title)
-  });
+  const handleSearch = (query: string) => {
+    const formattedQuery = query.trim().toUpperCase();
+    if (!formattedQuery) return;
+    
+    setSearchQuery(formattedQuery);
+    addToHistory(formattedQuery);
+  };
 
   return (
     <main className="min-h-screen bg-background font-inter">
@@ -42,18 +52,16 @@ export default function Home() {
         {/* Search Section */}
         <div className="mb-8">
           <SearchBar onSearch={handleSearch} />
-          <div className="mt-2 text-sm text-gray-500">
-            Current search: {searchQuery || 'None'}
-          </div>
+          <SearchHistory 
+            onSelect={handleSearch}
+            searchHistory={searchHistory}
+          />
         </div>
 
         {/* Containers Section */}
         <div className="space-y-8">
           {containers.map(({ title, Component }) => (
             <div key={title} className="container-wrapper">
-              <div className="mb-2 text-sm text-gray-500">
-                Container: {title}, Query: {searchQuery || 'None'}
-              </div>
               <Component searchQuery={searchQuery} />
             </div>
           ))}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RedditData, RedditPost } from '../api';
+import { RedditData, RedditPost, AIAnalysis } from '../api';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const formatDate = (timestamp: number): string => {
@@ -53,36 +53,52 @@ const SentimentIndicator: React.FC<{ value: number; rawValue?: number }> = ({ va
   );
 };
 
-const AIAnalysisDropdown: React.FC<{ data: RedditData['aiAnalysis'] }> = ({ data }) => {
+const AIAnalysisDropdown = ({ data }: { data: AIAnalysis }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!data) return null;
-
   return (
-    <div className="bg-white rounded-lg p-3 shadow-sm">
+    <div className="mt-4 border rounded-lg bg-white shadow-sm overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left"
+        className="flex items-center justify-between w-full p-4 text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">🤖 AI Analysis</span>
+          <span className="text-2xl">🤖</span>
+          <span className="font-semibold">AI Analysis for {data.ticker}</span>
           {data.isLoading && <LoadingSpinner size="sm" />}
         </div>
-        <span className="text-gray-400">
-          {isOpen ? '▼' : '▶'}
+        <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+          ▼
         </span>
       </button>
       
       {isOpen && (
-        <div className="mt-3 space-y-3">
-          <div>
-            <div className="text-sm text-gray-600 mb-1">Overall Sentiment</div>
-            <SentimentIndicator value={data.overallSentiment} />
+        <div className="p-4 border-t">
+          <div className="mb-4">
+            <div className="font-medium mb-2">Overall Sentiment Score</div>
+            <div className="text-lg font-semibold text-primary">
+              {typeof data.overallSentiment === 'number' ? data.overallSentiment.toFixed(2) : 'N/A'}
+            </div>
           </div>
-          <div>
-            <div className="text-sm text-gray-600 mb-1">Summary</div>
-            <p className="text-sm text-gray-700">{data.summary}</p>
+          
+          <div className="mb-4">
+            <div className="font-medium mb-2">Summary</div>
+            <div className="text-gray-700 bg-gray-50 p-3 rounded-lg">{data.summary}</div>
           </div>
+
+          {data.filteredPosts && data.filteredPosts.length > 0 && (
+            <div>
+              <div className="font-medium mb-2">Filtered Posts</div>
+              <div className="space-y-2">
+                {data.filteredPosts.map((post: { title: string; reason: string }, i: number) => (
+                  <div key={i} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="font-medium text-sm text-gray-900">{post.title}</div>
+                    <div className="text-sm text-gray-500 mt-1">{post.reason}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

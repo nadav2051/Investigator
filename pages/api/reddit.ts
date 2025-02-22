@@ -75,6 +75,7 @@ const STOCK_LEXICON: Record<string, number> = {
 interface RedditPost {
   subreddit: string;
   title: string;
+  selftext?: string;
   url: string;
   score: number;
   num_comments: number;
@@ -211,6 +212,7 @@ export default async function handler(
             posts.push({
               subreddit: post.subreddit.display_name,
               title: post.title,
+              selftext: post.selftext,
               url: post.url,
               score: post.score,
               num_comments: post.num_comments,

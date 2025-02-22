@@ -2,6 +2,7 @@
 export interface RedditPost {
   subreddit: string;
   title: string;
+  selftext?: string;
   url: string;
   score: number;
   num_comments: number;
@@ -23,6 +24,11 @@ export interface AIAnalysis {
   summary: string;
   overallSentiment: number;
   isLoading?: boolean;
+  ticker: string;
+  filteredPosts?: {
+    title: string;
+    reason: string;
+  }[];
 }
 
 export interface RedditData {
@@ -32,32 +38,14 @@ export interface RedditData {
   lastUpdated: string;
   searchInfo: SearchInfo;
   aiAnalysis?: AIAnalysis;
-  debug?: {
-    rawSentiments: { text: string; raw: number; normalized: number }[];
-  };
 }
 
 export async function fetchRedditData(symbol: string): Promise<RedditData> {
-  console.log('🔵 [Reddit] Fetching data for:', symbol);
-  
-  try {
-    const response = await fetch(`/api/reddit?symbol=${encodeURIComponent(symbol)}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch Reddit data');
-    }
-    
-    const data = await response.json();
-    console.log('🔵 [Reddit] Data received:', {
-      postCount: data.posts.length,
-      sentiment: data.overallSentiment,
-      timestamp: data.lastUpdated,
-      searchInfo: data.searchInfo
-    });
-    
-    return data;
-  } catch (error) {
-    console.error('🔵 [Reddit] Error:', error);
-    throw error;
+  const response = await fetch(`/api/reddit?symbol=${encodeURIComponent(symbol)}`);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch Reddit data');
   }
+  
+  return response.json();
 } 
