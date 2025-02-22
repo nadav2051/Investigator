@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Snoowrap from 'snoowrap';
+import Snoowrap, { Listing, Submission } from 'snoowrap';
 import natural from 'natural';
 import { googleAI } from '../../services/GoogleAI';
 
@@ -109,6 +109,19 @@ interface RedditData {
   };
 }
 
+// Add type for Snoowrap Submission
+interface SnooSubmission {
+  title: string;
+  selftext: string;
+  url: string;
+  score: number;
+  num_comments: number;
+  created_utc: number;
+  subreddit: {
+    display_name: string;
+  };
+}
+
 const SUBREDDITS = [
   'wallstreetbets',
   'stocks',
@@ -211,8 +224,10 @@ export default async function handler(
       const searchPromise = reddit.getSubreddit(subreddit).search({
         query: symbol.toUpperCase(),
         time: 'week',
-        sort: 'relevance',
-        limit: 10 // Limit results per subreddit
+        sort: 'relevance'
+      }).then(results => {
+        // Limit results after fetching
+        return (results as any[]).slice(0, 10);
       }).catch(error => {
         console.error(`Error searching r/${subreddit}:`, error);
         return [];
@@ -222,7 +237,7 @@ export default async function handler(
         .catch(() => []);
     });
 
-    const searchResults = await Promise.all(searchPromises);
+    const searchResults = await Promise.all(searchPromises) as Submission[][];
 
     // Process posts
     for (const results of searchResults) {

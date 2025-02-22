@@ -2,6 +2,29 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import type { StockData } from '../../types/yahoo-api';
 import yahooFinance from 'yahoo-finance2';
 
+// Add type definitions for Yahoo Finance news response
+interface YahooNewsArticle {
+  uuid: string;
+  title: string;
+  link: string;
+  publisher: string;
+  providerPublishTime: string;
+  type: string;
+  thumbnail?: {
+    resolutions: Array<{
+      url: string;
+      width: number;
+      height: number;
+      tag: string;
+    }>;
+  };
+  relatedTickers?: string[];
+}
+
+interface YahooNewsResponse {
+  news?: YahooNewsArticle[];
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<StockData | { error: string; details?: string }>
@@ -35,6 +58,8 @@ export default async function handler(
         enableEnhancedTrivialQuery: true
       })
     ]);
+
+    console.log('News response:', JSON.stringify(news, null, 2));
 
     if (!historical || historical.length === 0) {
       throw new Error(`No historical data found for symbol: ${symbol}`);
@@ -122,11 +147,10 @@ export default async function handler(
         title: article.title,
         link: article.link,
         publisher: article.publisher,
-        publishedAt: new Date(article.providerPublishTime * 1000).toISOString(),
-        summary: article.summary,
+        publishedAt: article.providerPublishTime,
+        summary: undefined,
         thumbnail: article.thumbnail?.resolutions?.[0]?.url,
-        // Simple sentiment analysis based on title and summary
-        sentiment: determineSentiment(article.title + ' ' + (article.summary || ''))
+        sentiment: determineSentiment(article.title)
       })) || [],
 
       lastUpdated: new Date().toISOString()
