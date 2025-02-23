@@ -127,7 +127,9 @@ const SUBREDDITS = [
   'stocks',
   'investing',
   'StockMarket',
-  'options'
+  'options',
+  'pennystocks',
+  'ValueInvesting',
 ];
 const SEARCH_TIMEFRAME = '1 week';
 
