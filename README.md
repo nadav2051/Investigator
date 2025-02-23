@@ -1,37 +1,48 @@
 # Investigator
 
-A focused React application built with Next.js that provides detailed stock market data through Yahoo Finance integration. The application features a clean, responsive interface and delivers comprehensive financial information including real-time prices, market metrics, analyst recommendations, and historical returns.
+A comprehensive stock market analysis tool built with Next.js that combines real-time market data, technical analysis, and social sentiment analysis. The application integrates Yahoo Finance data, technical indicators, and Reddit discussions to provide a holistic view of stock market trends and sentiment.
 
 ## Features
 
-- **Real-time Stock Data**
-  - Current price and market state
-  - Market capitalization
-  - Trading volume with 3-month average
-  - Day range and 52-week range
+### 1. Stock Information (Yahoo Finance)
+- Real-time stock data and market metrics
+- Current price and market state
+- Trading volume with 3-month average
+- Market capitalization
+- P/E Ratio (Trailing and Forward)
+- Price to Book Ratio
+- Analyst recommendations with visual breakdown
+- Historical returns (1-day, 1-month, 6-month, 1-year)
+- Latest news articles with sentiment analysis
 
-- **Market Metrics**
-  - P/E Ratio (Trailing and Forward)
-  - Price to Book Ratio
-  - Exchange information
+### 2. Technical Analysis
+- Interactive candlestick chart
+- Moving Averages (SMA 20, 50, 200 & EMA 20)
+- Relative Strength Index (RSI)
+- MACD (Moving Average Convergence Divergence)
+- Bollinger Bands
+- Buy/Sell signals for each indicator
+- Detailed tooltips explaining each indicator
 
-- **Analyst Coverage**
-  - Detailed analyst recommendations breakdown
-  - Visual representation of buy/sell ratings
-  - Target price information
-  - Average analyst rating
+### 3. Reddit Sentiment Analysis
+- Real-time Reddit discussions tracking
+- Sentiment analysis of posts and comments
+- AI-powered discussion analysis
+- Mentions tracking over time
+- Subreddit coverage:
+  - r/wallstreetbets
+  - r/stocks
+  - r/investing
+  - r/StockMarket
+  - r/options
 
-- **Historical Performance**
-  - Day change with percentage
-  - 1-month returns
-  - 6-month returns
-  - 1-year returns
-
-- **User Interface**
-  - Clean, modern design
-  - Responsive layout
-  - Real-time updates
-  - Error handling and loading states
+### 4. User Interface
+- Clean, modern design with Tailwind CSS
+- Responsive layout
+- Collapsible containers
+- Real-time updates
+- Search history
+- Loading states and error handling
 
 ## Technical Stack
 
@@ -40,169 +51,139 @@ A focused React application built with Next.js that provides detailed stock mark
   - React 18
   - TypeScript
   - Tailwind CSS
+  - Lightweight Charts
 
-- **Data Integration**
+- **APIs & Services**
   - Yahoo Finance API
-  - Real-time data fetching
-  - Error handling
-  - Type-safe responses
+  - Reddit API
+  - Google AI (Gemini Pro)
+  - Technical Indicators Library
+
+- **Data Analysis**
+  - Technical analysis calculations
+  - Natural language processing
+  - Sentiment analysis
+  - AI-powered insights
+
+## Getting Started
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/investigator.git
+   cd investigator
+   ```
+
+2. **Environment Setup**
+   Create a `.env.local` file with the following:
+   ```env
+   # Reddit API Credentials
+   NEXT_PUBLIC_REDDIT_CLIENT_ID=your_client_id
+   NEXT_PUBLIC_REDDIT_CLIENT_SECRET=your_client_secret
+   NEXT_PUBLIC_REDDIT_REFRESH_TOKEN=your_refresh_token
+   NEXT_PUBLIC_REDDIT_ACCESS_TOKEN=your_access_token
+
+   # Google AI Studio Key
+   NEXT_PRIVATE_GOOGLE_AI_STUDIO_KEY=your_google_ai_key
+   ```
+
+3. **Installation**
+   ```bash
+   npm install
+   ```
+
+4. **Development**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000)
+
+5. **Production Build**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+## API Configuration
+
+### Reddit API Setup
+1. Go to https://www.reddit.com/prefs/apps
+2. Create a new app (script type)
+3. Fill in the required information
+4. Copy the credentials to your `.env.local` file
+
+### Google AI Studio Setup
+1. Visit Google AI Studio
+2. Generate an API key
+3. Add it to your `.env.local` file
 
 ## Project Structure
 
 ```
 Investigator/
-├── components/                 # Shared components
-│   └── SearchBar.tsx          # Global search component
+├── components/                # Shared components
+│   ├── LoadingSpinner.tsx
+│   ├── LoadingOverlay.tsx
+│   ├── SearchBar.tsx
+│   └── SearchHistory.tsx
 │
-├── containers/                 # Main container
-│   └── YahooFinanceContainer/
-│       ├── api.ts             # Yahoo Finance API integration
-│       ├── types.ts           # Type definitions
-│       ├── index.tsx          # Container component
-│       └── components/        # Container-specific components
-│           └── StockDisplay.tsx
+├── containers/               # Main feature containers
+│   ├── YahooFinanceContainer/
+│   │   ├── api.ts
+│   │   ├── types.ts
+│   │   └── components/
+│   │
+│   ├── TechnicalAnalysisContainer/
+│   │   ├── utils.ts
+│   │   ├── types.ts
+│   │   └── components/
+│   │
+│   └── RedditContainer/
+│       ├── api.ts
+│       ├── types.ts
+│       └── components/
 │
-├── pages/                     # Next.js pages
-│   ├── api/                   # Backend API endpoints
-│   │   └── yahoo-finance.ts   # Yahoo Finance API handler
-│   └── index.tsx             # Main application page
+├── pages/                    # Next.js pages
+│   ├── api/                 # API routes
+│   │   ├── yahoo-finance/
+│   │   ├── reddit.ts
+│   │   └── analyze-sentiment.ts
+│   └── index.tsx
 │
-└── types/                     # Global type definitions
-    ├── container.ts          # Container interfaces
-    └── yahoo-api.ts         # Yahoo Finance API types
+├── services/                # External services
+│   └── GoogleAI.ts
+│
+├── styles/                  # Global styles
+│   └── globals.css
+│
+└── types/                   # Global type definitions
+    ├── container.ts
+    └── yahoo-api.ts
 ```
-
-## Getting Started
-
-1. **Installation**
-   ```bash
-   npm install
-   ```
-
-2. **Development**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-3. **Build**
-   ```bash
-   npm run build
-   ```
-
-## Usage
-
-1. Enter a stock symbol (e.g., AAPL, MSFT, GOOGL) in the search bar
-2. View comprehensive stock information including:
-   - Current price and market status
-   - Market metrics and trading data
-   - Analyst recommendations
-   - Historical performance
-
-## Development Guidelines
-
-1. **Type Safety**
-   - All components are properly typed
-   - API responses have defined interfaces
-   - Strict TypeScript configuration
-
-2. **Error Handling**
-   - Comprehensive error states
-   - User-friendly error messages
-   - Graceful fallbacks
-
-3. **Styling**
-   - Tailwind CSS for consistent design
-   - Responsive layouts
-   - Modern UI components
-
-4. **Performance**
-   - Efficient data fetching
-   - Optimized rendering
-   - Proper loading states
-
-## Future Enhancements
-
-- Add technical analysis indicators
-- Implement price alerts
-- Add historical price charts
-- Include company financials
-- Add portfolio tracking
-- Implement data caching
-- Add more technical indicators
-- Support for multiple currencies
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Implement your changes
+3. Make your changes
 4. Submit a pull request
 
 ## License
 
-MIT 
+MIT
 
 ## Deployment
 
-The application is optimized for deployment on Vercel, the platform created by the makers of Next.js.
+The application is optimized for deployment on Vercel. Follow these steps:
 
-### Automatic Deployment (Recommended)
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
 
-1. **Prerequisites**
-   - A [Vercel account](https://vercel.com/signup)
-   - Your code pushed to a Git repository (GitHub, GitLab, or Bitbucket)
+## Acknowledgments
 
-2. **Deploy Process**
-   - Go to [Vercel's website](https://vercel.com)
-   - Click "Import Project"
-   - Select "Import Git Repository"
-   - Choose your repository
-   - Vercel will automatically detect Next.js settings
-   - Click "Deploy"
-
-3. **What You Get**
-   - Production URL (e.g., `https://your-project.vercel.app`)
-   - Automatic HTTPS
-   - Continuous deployments on git push
-   - Preview deployments for pull requests
-   - Built-in performance monitoring
-   - Edge network for fast delivery
-
-### Manual Deployment
-
-If you prefer using the command line:
-
-1. **Install Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **Deploy**
-   ```bash
-   vercel
-   ```
-
-3. **For Production**
-   ```bash
-   vercel --prod
-   ```
-
-### Environment Variables
-
-No environment variables are required for basic functionality. The application uses the public Yahoo Finance API.
-
-### Post-Deployment
-
-After deployment, verify these features are working:
-- Stock symbol search
-- Real-time price updates
-- Analyst recommendations
-- Historical returns
-
-### Deployment Troubleshooting
-
-Common issues and solutions:
-- If the build fails, ensure all dependencies are properly listed in `package.json`
-- If data doesn't load, check the Network tab for API call issues
-- For TypeScript errors, run `npm run build` locally first to catch any type issues 
+- Yahoo Finance API for market data
+- Reddit API for social sentiment
+- Google AI for advanced analysis
+- Trading View for Lightweight Charts
+- Technical Indicators library 

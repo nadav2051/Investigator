@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.22.0",
+    "lightweight-charts": "^5.0.2",
     "natural": "^8.0.1",
     "next": "14.0.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "snoowrap": "^1.23.0",
+    "technicalindicators": "^3.1.0",
     "yahoo-finance2": "^2.13.3"
   },
   "devDependencies": {

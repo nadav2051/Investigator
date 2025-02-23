@@ -4,7 +4,7 @@ import { StockData } from './types';
 import { fetchStockData } from './api';
 import StockDisplay from './components/StockDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [state, setState] = useState<{
