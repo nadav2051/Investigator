@@ -98,10 +98,10 @@ export const AskAI: React.FC<AskAIProps> = ({ containerType, containerData, clas
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 hover:bg-gray-100 rounded-lg transition-colors ${className}`}
+        className={`px-4 py-2 border-2 border-primary text-primary bg-white rounded-lg hover:bg-primary hover:text-white transition-colors ${className}`}
         title="Ask AI about this data"
       >
-        🤖
+        Ask AI
       </button>
 
       {isOpen && (
