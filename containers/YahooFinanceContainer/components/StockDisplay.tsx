@@ -33,11 +33,11 @@ const ReturnIndicator: React.FC<{ value: number; label?: string }> = ({ value, l
   return (
     <div className="transition-all hover:scale-105">
       {label && (
-        <div className="text-gray-600 text-sm font-medium mb-1">
+        <div className="text-gray-600 text-xs font-medium mb-0.5">
           {label}
         </div>
       )}
-      <div className={`${bgColor} ${color} font-semibold py-1 px-2 rounded-lg inline-flex items-center gap-1`}>
+      <div className={`${bgColor} ${color} font-semibold py-0.5 px-1.5 text-sm rounded inline-flex items-center gap-0.5`}>
         <span aria-hidden="true">{arrow}</span>
         <span>{Math.abs(value).toFixed(2)}%</span>
       </div>
@@ -50,10 +50,10 @@ const MetricCard: React.FC<{
   value: string | number;
   subValue?: string;
 }> = ({ label, value, subValue }) => (
-  <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
-    <div className="text-gray-600 text-sm font-medium mb-1">{label}</div>
-    <div className="font-semibold text-gray-900">{value}</div>
-    {subValue && <div className="text-xs text-gray-500 mt-1">{subValue}</div>}
+  <div className="bg-white rounded-lg p-2 shadow-sm hover:shadow-md transition-all">
+    <div className="text-gray-600 text-xs font-medium mb-0.5">{label}</div>
+    <div className="font-semibold text-gray-900 text-sm">{value}</div>
+    {subValue && <div className="text-xs text-gray-500 mt-0.5">{subValue}</div>}
   </div>
 );
 
@@ -150,14 +150,14 @@ interface StockDisplayProps {
 
 const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) => {
   return (
-    <div className="space-y-4 font-inter">
+    <div className="space-y-3 font-inter">
       {/* Header - More Compact */}
-      <div className="bg-white rounded-lg p-4 shadow-sm">
+      <div className="bg-white rounded-lg p-3 shadow-sm">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-gray-900">{data.symbol}</h3>
-              <span className={`px-2 py-0.5 text-xs rounded-full ${
+              <h3 className="text-lg font-bold text-gray-900">{data.symbol}</h3>
+              <span className={`px-1.5 py-0.5 text-xs rounded-full ${
                 data.marketState === 'REGULAR' ? 'bg-green-100 text-green-800' :
                 data.marketState === 'CLOSED' ? 'bg-gray-100 text-gray-800' :
                 'bg-yellow-100 text-yellow-800'
@@ -165,10 +165,10 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
                 {data.marketState}
               </span>
             </div>
-            <div className="text-sm text-gray-600">{data.longName || data.shortName}</div>
+            <div className="text-xs text-gray-600 mt-0.5">{data.longName || data.shortName}</div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+            <div className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               {formatCurrency(data.currentPrice, data.currency)}
               {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
@@ -177,12 +177,12 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Left Column */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Quick Stats */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg p-2 shadow-sm">
+            <div className="grid grid-cols-2 gap-2">
               <MetricCard
                 label="Market Cap"
                 value={formatMarketCap(data.marketCap)}
@@ -196,12 +196,12 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
           </div>
 
           {/* Market Metrics */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-gray-900">Market Metrics</h4>
+          <div className="bg-white rounded-lg p-2 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-gray-900">Market Metrics</h4>
               {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
-            <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-3 gap-2 text-xs">
               {data.trailingPE && (
                 <div>
                   <div className="text-gray-600">P/E (TTM)</div>
@@ -222,25 +222,11 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
               )}
             </div>
           </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-4">
-          {/* Analyst Ratings */}
-          {data.analystRatings && (
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-gray-900">Analyst Recommendations</h4>
-                {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
-              </div>
-              <AnalystRatings ratings={data.analystRatings} currency={data.currency} />
-            </div>
-          )}
 
           {/* Returns */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-gray-900">Returns</h4>
+          <div className="bg-white rounded-lg p-2 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-gray-900">Returns</h4>
               {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -251,20 +237,34 @@ const StockDisplay: React.FC<StockDisplayProps> = ({ data, isLoading = false }) 
             </div>
           </div>
         </div>
+
+        {/* Right Column */}
+        <div className="space-y-3">
+          {/* Analyst Ratings */}
+          {data.analystRatings && (
+            <div className="bg-white rounded-lg p-2 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-xs font-semibold text-gray-900">Analyst Recommendations</h4>
+                {isLoading && <LoadingSpinner size="sm" className="opacity-30" />}
+              </div>
+              <AnalystRatings ratings={data.analystRatings} currency={data.currency} />
+            </div>
+          )}
+
+          {/* News Articles */}
+          {data.newsArticles && data.newsArticles.length > 0 && (
+            <div className="bg-white rounded-lg p-2 shadow-sm">
+              <div className="flex items-center justify-between mb-1">
+                <h4 className="text-xs font-semibold text-gray-900">Latest News</h4>
+                {isLoading && <LoadingSpinner size="sm" />}
+              </div>
+              <NewsArticles articles={data.newsArticles} isLoading={isLoading} />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* News Articles */}
-      {data.newsArticles && data.newsArticles.length > 0 && (
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-semibold text-gray-900">Latest News</h4>
-            {isLoading && <LoadingSpinner size="sm" />}
-          </div>
-          <NewsArticles articles={data.newsArticles} isLoading={isLoading} />
-        </div>
-      )}
-
-      <div className="text-xs text-gray-500 text-right">
+      <div className="text-[10px] text-gray-500 text-right">
         Last updated: {new Date(data.lastUpdated).toLocaleString()}
       </div>
     </div>
