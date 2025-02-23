@@ -1,6 +1,6 @@
 # Investigator
 
-A comprehensive stock market analysis tool built with Next.js that combines real-time market data, technical analysis, and social sentiment analysis. The application integrates Yahoo Finance data, technical indicators, and Reddit discussions to provide a holistic view of stock market trends and sentiment.
+A comprehensive stock market analysis tool built with Next.js that combines real-time market data with technical analysis. The application integrates Yahoo Finance data and technical indicators to provide a holistic view of stock market trends.
 
 ## Features
 
@@ -17,26 +17,17 @@ A comprehensive stock market analysis tool built with Next.js that combines real
 
 ### 2. Technical Analysis
 - Interactive candlestick chart
-- Moving Averages (SMA 20, 50, 200 & EMA 20)
+- Moving Averages
+  - SMA 20, 50, 150, 200
+  - Toggleable visibility for each SMA line
+  - Color-coded for easy identification
 - Relative Strength Index (RSI)
 - MACD (Moving Average Convergence Divergence)
 - Bollinger Bands
 - Buy/Sell signals for each indicator
 - Detailed tooltips explaining each indicator
 
-### 3. Reddit Sentiment Analysis
-- Real-time Reddit discussions tracking
-- Sentiment analysis of posts and comments
-- AI-powered discussion analysis
-- Mentions tracking over time
-- Subreddit coverage:
-  - r/wallstreetbets
-  - r/stocks
-  - r/investing
-  - r/StockMarket
-  - r/options
-
-### 4. User Interface
+### 3. User Interface
 - Clean, modern design with Tailwind CSS
 - Responsive layout
 - Collapsible containers
@@ -55,15 +46,13 @@ A comprehensive stock market analysis tool built with Next.js that combines real
 
 - **APIs & Services**
   - Yahoo Finance API
-  - Reddit API
-  - Google AI (Gemini Pro)
   - Technical Indicators Library
 
 - **Data Analysis**
   - Technical analysis calculations
-  - Natural language processing
-  - Sentiment analysis
-  - AI-powered insights
+  - Moving averages
+  - Momentum indicators
+  - Volatility indicators
 
 ## Getting Started
 
@@ -73,48 +62,22 @@ A comprehensive stock market analysis tool built with Next.js that combines real
    cd investigator
    ```
 
-2. **Environment Setup**
-   Create a `.env.local` file with the following:
-   ```env
-   # Reddit API Credentials
-   NEXT_PUBLIC_REDDIT_CLIENT_ID=your_client_id
-   NEXT_PUBLIC_REDDIT_CLIENT_SECRET=your_client_secret
-   NEXT_PUBLIC_REDDIT_REFRESH_TOKEN=your_refresh_token
-   NEXT_PUBLIC_REDDIT_ACCESS_TOKEN=your_access_token
-
-   # Google AI Studio Key
-   NEXT_PRIVATE_GOOGLE_AI_STUDIO_KEY=your_google_ai_key
-   ```
-
-3. **Installation**
+2. **Installation**
    ```bash
    npm install
    ```
 
-4. **Development**
+3. **Development**
    ```bash
    npm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000)
 
-5. **Production Build**
+4. **Production Build**
    ```bash
    npm run build
    npm start
    ```
-
-## API Configuration
-
-### Reddit API Setup
-1. Go to https://www.reddit.com/prefs/apps
-2. Create a new app (script type)
-3. Fill in the required information
-4. Copy the credentials to your `.env.local` file
-
-### Google AI Studio Setup
-1. Visit Google AI Studio
-2. Generate an API key
-3. Add it to your `.env.local` file
 
 ## Project Structure
 
@@ -132,32 +95,18 @@ Investigator/
 │   │   ├── types.ts
 │   │   └── components/
 │   │
-│   ├── TechnicalAnalysisContainer/
-│   │   ├── utils.ts
-│   │   ├── types.ts
-│   │   └── components/
-│   │
-│   └── RedditContainer/
-│       ├── api.ts
+│   └── TechnicalAnalysisContainer/
+│       ├── utils.ts
 │       ├── types.ts
 │       └── components/
 │
 ├── pages/                    # Next.js pages
 │   ├── api/                 # API routes
-│   │   ├── yahoo-finance/
-│   │   ├── reddit.ts
-│   │   └── analyze-sentiment.ts
+│   │   └── yahoo-finance/
 │   └── index.tsx
 │
-├── services/                # External services
-│   └── GoogleAI.ts
-│
-├── styles/                  # Global styles
-│   └── globals.css
-│
-└── types/                   # Global type definitions
-    ├── container.ts
-    └── yahoo-api.ts
+└── styles/                  # Global styles
+    └── globals.css
 ```
 
 ## Contributing
@@ -177,13 +126,10 @@ The application is optimized for deployment on Vercel. Follow these steps:
 
 1. Push your code to GitHub
 2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
+3. Deploy
 
 ## Acknowledgments
 
 - Yahoo Finance API for market data
-- Reddit API for social sentiment
-- Google AI for advanced analysis
 - Trading View for Lightweight Charts
 - Technical Indicators library 
