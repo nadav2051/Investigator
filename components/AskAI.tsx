@@ -6,6 +6,7 @@ interface AskAIProps {
   containerType: 'yahoo' | 'technical' | 'reddit';
   containerData: any;
   className?: string;
+  onOpen?: () => void;
 }
 
 interface AIResponse {
@@ -14,7 +15,7 @@ interface AIResponse {
   timestamp: number;
 }
 
-export const AskAI: React.FC<AskAIProps> = ({ containerType, containerData, className = '' }) => {
+export const AskAI: React.FC<AskAIProps> = ({ containerType, containerData, className = '', onOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +98,12 @@ export const AskAI: React.FC<AskAIProps> = ({ containerType, containerData, clas
     <div className="relative">
       <button
         ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen && onOpen) {
+            onOpen();
+          }
+        }}
         className={`px-4 py-2 border-2 border-primary text-primary bg-white rounded-lg hover:bg-primary hover:text-white transition-colors ${className}`}
         title="Ask AI about this data"
       >

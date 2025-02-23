@@ -71,6 +71,7 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
             <AskAI
               containerType="yahoo"
               containerData={state.data}
+              onOpen={() => setIsCollapsed(false)}
             />
           )}
           <span 

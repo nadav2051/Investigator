@@ -147,6 +147,7 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
             <AskAI
               containerType="reddit"
               containerData={state.data}
+              onOpen={() => setIsCollapsed(false)}
             />
           )}
           <span 

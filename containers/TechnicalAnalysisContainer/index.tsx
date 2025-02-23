@@ -134,6 +134,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
             <AskAI
               containerType="technical"
               containerData={data}
+              onOpen={() => setIsCollapsed(false)}
             />
           )}
           <span 
