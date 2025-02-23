@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { createChart, ColorType, Time, IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
+import { createChart, ColorType, Time, IChartApi, SeriesOptionsMap, DeepPartial, ChartOptions } from 'lightweight-charts';
 import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -7,8 +7,12 @@ import IndicatorCard from './components/IndicatorCard';
 import type { ContainerProps } from '../../types/container';
 import { AskAI } from '../../components/AskAI';
 
-interface ChartData extends Omit<CandlestickData, 'time'> {
+interface ChartData {
   time: Time;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
 }
 
 const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
@@ -19,7 +23,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
-  const series = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const series = useRef<any>(null);
 
   // Initialize chart
   useEffect(() => {
@@ -36,8 +40,8 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     };
 
     try {
-      // Create chart instance
-      const chartInstance = createChart(chartContainerRef.current, {
+      // Create chart instance with proper type assertion
+      const chartOptions: DeepPartial<ChartOptions> = {
         width: chartContainerRef.current.clientWidth,
         height: 400,
         layout: {
@@ -55,12 +59,14 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
           timeVisible: true,
           secondsVisible: false,
         },
-      });
+      };
+
+      const chartInstance = createChart(chartContainerRef.current, chartOptions);
 
       console.log('Chart instance created successfully');
 
-      // Create candlestick series
-      const candlestickSeries = chartInstance.addCandlestickSeries({
+      // Create candlestick series with type assertion
+      const candlestickSeries = (chartInstance as any).addCandlestickSeries({
         upColor: '#4CAF50',
         downColor: '#FF5252',
         borderVisible: false,
