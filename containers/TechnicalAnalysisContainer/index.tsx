@@ -5,6 +5,7 @@ import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import IndicatorCard from './components/IndicatorCard';
 import type { ContainerProps } from '../../types/container';
+import { AskAI } from '../../components/AskAI';
 
 const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [data, setData] = useState<TechnicalAnalysisData | null>(null);
@@ -123,15 +124,25 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
       <div 
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Technical Analysis - {searchQuery}</h2>
           {isLoading && <LoadingSpinner size="sm" />}
         </div>
-        <span className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
-          ▲
-        </span>
+        <div className="flex items-center gap-2">
+          {data && (
+            <AskAI
+              containerType="technical"
+              containerData={data}
+            />
+          )}
+          <span 
+            className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            ▲
+          </span>
+        </div>
       </div>
 
       <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>

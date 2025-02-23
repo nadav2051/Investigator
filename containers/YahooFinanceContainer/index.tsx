@@ -5,6 +5,7 @@ import { fetchStockData } from './api';
 import StockDisplay from './components/StockDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { AskAI } from '../../components/AskAI';
 
 const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [state, setState] = useState<{
@@ -60,15 +61,25 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
     <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
       <div 
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Stock Information</h2>
           {state.loading && <LoadingSpinner size="sm" />}
         </div>
-        <span className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
-          ▲
-        </span>
+        <div className="flex items-center gap-2">
+          {state.data && (
+            <AskAI
+              containerType="yahoo"
+              containerData={state.data}
+            />
+          )}
+          <span 
+            className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            ▲
+          </span>
+        </div>
       </div>
 
       <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>

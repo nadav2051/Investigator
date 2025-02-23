@@ -34,6 +34,17 @@ class GoogleAIService {
     return totalWords > this.MAX_WORDS;
   }
 
+  async generateAnswer(prompt: string): Promise<string> {
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = result.response.text();
+      return response.trim();
+    } catch (error) {
+      console.error('Google AI Generate Answer Error:', error);
+      throw new Error('Failed to generate AI response');
+    }
+  }
+
   async analyzeRedditPosts(posts: { title: string; text: string }[], ticker: string): Promise<AIAnalysis> {
     // Track filtered posts
     const filteredPostsInfo: { title: string; reason: string }[] = [];
