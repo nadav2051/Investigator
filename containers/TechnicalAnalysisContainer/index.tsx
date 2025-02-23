@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import React, { useEffect, useState, useRef } from 'react';
+import { createChart, ColorType, Time, IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
 import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -7,24 +7,45 @@ import IndicatorCard from './components/IndicatorCard';
 import type { ContainerProps } from '../../types/container';
 import { AskAI } from '../../components/AskAI';
 
+interface ChartData extends Omit<CandlestickData, 'time'> {
+  time: Time;
+}
+
 const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [data, setData] = useState<TechnicalAnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [chartInstance, setChartInstance] = useState<IChartApi | null>(null);
-  const [candlestickSeries, setCandlestickSeries] = useState<ISeriesApi<"Candlestick"> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chart = useRef<IChartApi | null>(null);
+  const series = useRef<ISeriesApi<'Candlestick'> | null>(null);
 
   // Initialize chart
   useEffect(() => {
-    const chartContainer = document.getElementById('technical-chart');
-    if (chartContainer && !chartInstance) {
-      const chart = createChart(chartContainer, {
-        width: chartContainer.clientWidth,
+    if (!chartContainerRef.current || chart.current) return;
+
+    console.log('Initializing chart...');
+
+    const handleResize = () => {
+      if (chartContainerRef.current && chart.current) {
+        chart.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+        });
+      }
+    };
+
+    try {
+      // Create chart instance
+      const chartInstance = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
         height: 400,
         layout: {
-          background: { color: '#ffffff' },
-          textColor: '#333',
+          background: { 
+            type: ColorType.Solid,
+            color: '#FFFFFF'
+          },
+          textColor: '#333333',
         },
         grid: {
           vertLines: { color: '#f0f0f0' },
@@ -36,9 +57,10 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         },
       });
 
-      // Cast the chart to any to access the addCandlestickSeries method
-      // This is a workaround for the incomplete TypeScript definitions in the library
-      const series = (chart as any).addCandlestickSeries({
+      console.log('Chart instance created successfully');
+
+      // Create candlestick series
+      const candlestickSeries = chartInstance.addCandlestickSeries({
         upColor: '#4CAF50',
         downColor: '#FF5252',
         borderVisible: false,
@@ -46,23 +68,25 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         wickDownColor: '#FF5252',
       });
 
-      setChartInstance(chart);
-      setCandlestickSeries(series);
+      console.log('Candlestick series created successfully');
 
-      // Handle resize
-      const handleResize = () => {
-        chart.applyOptions({
-          width: chartContainer.clientWidth,
-        });
-      };
+      chart.current = chartInstance;
+      series.current = candlestickSeries;
+
       window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        chart.remove();
-        setChartInstance(null);
-        setCandlestickSeries(null);
-      };
+    } catch (err) {
+      console.error('Failed to initialize chart:', err);
+      setError('Failed to initialize chart: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (chart.current) {
+        chart.current.remove();
+        chart.current = null;
+        series.current = null;
+      }
+    };
   }, []);
 
   // Fetch and update data
@@ -70,12 +94,13 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     const fetchData = async () => {
       if (!searchQuery) {
         setData(null);
-        if (candlestickSeries) {
-          candlestickSeries.setData([]);
+        if (series.current) {
+          series.current.setData([]);
         }
         return;
       }
 
+      console.log(`Fetching data for ${searchQuery}...`);
       setIsLoading(true);
       setError(null);
 
@@ -86,20 +111,43 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         }
 
         const historicalData = await response.json();
+        console.log('Historical data received:', historicalData?.length, 'data points');
+
+        if (!historicalData || historicalData.length === 0) {
+          throw new Error('No historical data received');
+        }
+
         const processedData = calculateIndicators(historicalData);
+        console.log('Processed data:', {
+          sma20: processedData.sma20?.value,
+          rsi: processedData.rsi?.value,
+          macd: processedData.macd?.macdLine.value,
+          prices: processedData.prices?.length
+        });
+
         setData(processedData);
 
-        if (candlestickSeries) {
-          const chartData = processedData.prices.map((price) => ({
+        if (series.current && processedData.prices) {
+          const chartData: ChartData[] = processedData.prices.map((price) => ({
             time: price.timestamp / 1000 as Time,
             open: price.open,
             high: price.high,
             low: price.low,
             close: price.close,
           }));
-          candlestickSeries.setData(chartData);
+
+          console.log('Setting chart data:', chartData.length, 'points');
+          series.current.setData(chartData);
+
+          // Fit content after setting data
+          if (chart.current) {
+            chart.current.timeScale().fitContent();
+          }
+        } else {
+          console.warn('Series not available or no price data');
         }
       } catch (err) {
+        console.error('Failed to fetch data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
@@ -107,7 +155,21 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     };
 
     fetchData();
-  }, [searchQuery, candlestickSeries]);
+  }, [searchQuery]);
+
+  // Update chart on collapse state change
+  useEffect(() => {
+    if (!isCollapsed && chart.current && chartContainerRef.current) {
+      requestAnimationFrame(() => {
+        if (chart.current && chartContainerRef.current) {
+          chart.current.applyOptions({
+            width: chartContainerRef.current.clientWidth,
+          });
+          chart.current.timeScale().fitContent();
+        }
+      });
+    }
+  }, [isCollapsed]);
 
   if (!searchQuery) {
     return (
@@ -122,9 +184,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
 
   return (
     <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
-      <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-      >
+      <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Technical Analysis - {searchQuery}</h2>
           {isLoading && <LoadingSpinner size="sm" />}
@@ -155,8 +215,12 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
             </div>
           ) : (
             <>
-              <div id="technical-chart" className="w-full h-[400px] mb-4" />
-
+              {isLoading && !data && (
+                <div className="flex items-center justify-center h-[400px]">
+                  <LoadingSpinner size="lg" />
+                </div>
+              )}
+              <div ref={chartContainerRef} className={`w-full h-[400px] mb-4 ${isLoading && !data ? 'hidden' : ''}`} />
               {data && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.sma20 && <IndicatorCard indicator={data.sma20} />}

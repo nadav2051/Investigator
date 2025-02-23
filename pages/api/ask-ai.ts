@@ -65,7 +65,19 @@ export default async function handler(
           `Q: ${msg.question}\nA: ${msg.answer}`).join('\n\n')}`
       : '';
 
-    const prompt = `${contextPrompt}${conversationContext}\n\nUser Question: ${question}\n\nProvide a clear and concise answer based on the data above. Use markdown formatting for better readability. If you're mentioning numbers or data points, make sure they're from the context provided.`;
+    const prompt = `${contextPrompt}${conversationContext}\n\nUser Question: ${question}\n\n
+Provide a clear and concise answer based on the data above. Use markdown formatting for better readability.
+If the exact data needed to answer the question is not available in the context:
+1. Acknowledge this fact
+2. Provide a best-effort answer based on:
+   - Available related data points
+   - General market knowledge
+   - Technical analysis principles
+   - Common trading patterns
+3. Clearly indicate when you're making educated assumptions or providing general guidance
+4. If relevant, suggest what additional data would be helpful
+
+Remember to maintain a balanced and analytical tone, and always prioritize accuracy over speculation.`;
 
     const result = await googleAI.generateAnswer(prompt);
     res.status(200).json({ answer: result });
