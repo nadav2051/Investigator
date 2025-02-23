@@ -5,6 +5,7 @@ import { fetchStockData } from './api';
 import StockDisplay from './components/StockDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import ContainerHeader from '../../components/ContainerHeader';
 import { AskAI } from '../../components/AskAI';
 
 const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
@@ -58,30 +59,20 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   }
 
   return (
-    <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
-      <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold">Stock Information</h2>
-          {state.loading && <LoadingSpinner size="sm" />}
-        </div>
-        <div className="flex items-center gap-2">
-          {state.data && (
-            <AskAI
-              containerType="yahoo"
-              containerData={state.data}
-              onOpen={() => setIsCollapsed(false)}
-            />
-          )}
-          <span 
-            className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            ▲
-          </span>
-        </div>
-      </div>
+    <div className="border rounded-lg shadow-md bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+      <ContainerHeader
+        title="Stock Information"
+        symbol={searchQuery}
+        isLoading={state.loading}
+        isCollapsed={isCollapsed}
+        onCollapse={() => setIsCollapsed(!isCollapsed)}
+        className="bg-gradient-to-r from-blue-50 to-indigo-50/50"
+        aiProps={state.data ? {
+          containerType: "yahoo",
+          containerData: state.data,
+          onOpen: () => setIsCollapsed(false)
+        } : undefined}
+      />
 
       <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>
         <div className="p-4 border-t">

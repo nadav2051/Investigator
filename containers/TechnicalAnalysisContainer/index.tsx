@@ -3,6 +3,7 @@ import { createChart, ColorType, Time, IChartApi, ISeriesApi } from 'lightweight
 import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import ContainerHeader from '../../components/ContainerHeader';
 import IndicatorCard from './components/IndicatorCard';
 import type { ContainerProps } from '../../types/container';
 import { AskAI } from '../../components/AskAI';
@@ -217,31 +218,23 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   }
 
   return (
-    <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
-      <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold">Technical Analysis - {searchQuery}</h2>
-          {isLoading && <LoadingSpinner size="sm" />}
-        </div>
-        <div className="flex items-center gap-2">
-          {data && (
-            <AskAI
-              containerType="technical"
-              containerData={data}
-              onOpen={() => setIsCollapsed(false)}
-            />
-          )}
-          <span 
-            className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            ▲
-          </span>
-        </div>
-      </div>
+    <div className="border rounded-lg shadow-md bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+      <ContainerHeader
+        title="Technical Analysis"
+        symbol={searchQuery}
+        isLoading={isLoading}
+        isCollapsed={isCollapsed}
+        onCollapse={() => setIsCollapsed(!isCollapsed)}
+        className="bg-gradient-to-r from-purple-50 to-blue-50/50"
+        aiProps={data ? {
+          containerType: "technical",
+          containerData: data,
+          onOpen: () => setIsCollapsed(false)
+        } : undefined}
+      />
 
       <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>
-        <div className="p-4 border-t">
+        <div className="p-4">
           {error ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="font-medium text-red-700">Error Loading Data</div>
@@ -255,10 +248,10 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
                 </div>
               )}
               <div className="h-[800px] flex flex-col">
-                <div ref={chartContainerRef} className="w-full h-[400px] flex-shrink-0" />
+                <div ref={chartContainerRef} className="w-full h-[400px] flex-shrink-0 bg-white rounded-lg shadow-sm" />
                 {data && (
-                  <div className="flex-1 overflow-y-auto px-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 py-4">
+                  <div className="flex-1 overflow-y-auto px-4 mt-4 isolate">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 py-4 relative z-[1000]">
                       {data.sma20 && (
                         <IndicatorCard
                           indicator={data.sma20}
@@ -293,9 +286,9 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
 
                     {/* MACD Section */}
                     {data.macd && (
-                      <div className="bg-gray-50 p-3 rounded-lg mb-2">
-                        <h3 className="text-sm font-medium mb-2">MACD</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 rounded-xl shadow-sm backdrop-blur-sm mb-3">
+                        <h3 className="text-sm font-medium mb-3 text-gray-700">MACD</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <IndicatorCard indicator={data.macd.macdLine} />
                           <IndicatorCard indicator={data.macd.signalLine} />
                           <IndicatorCard indicator={data.macd.histogram} />
@@ -305,9 +298,9 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
 
                     {/* Bollinger Bands Section */}
                     {data.bollingerBands && (
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <h3 className="text-sm font-medium mb-2">Bollinger Bands</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 rounded-xl shadow-sm backdrop-blur-sm">
+                        <h3 className="text-sm font-medium mb-3 text-gray-700">Bollinger Bands</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <IndicatorCard indicator={data.bollingerBands.upper} />
                           <IndicatorCard indicator={data.bollingerBands.middle} showSignal={false} />
                           <IndicatorCard indicator={data.bollingerBands.lower} />

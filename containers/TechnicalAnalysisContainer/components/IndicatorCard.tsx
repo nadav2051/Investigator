@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { TechnicalIndicator } from '../types';
 
 interface IndicatorCardProps {
@@ -77,6 +78,32 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({
   onToggleVisibility,
   isVisible = true
 }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  const updateTooltipPosition = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.top - 10, // Position above the card
+        left: rect.left + (rect.width / 2) // Center horizontally
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (showTooltip) {
+      updateTooltipPosition();
+      window.addEventListener('scroll', updateTooltipPosition);
+      window.addEventListener('resize', updateTooltipPosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updateTooltipPosition);
+      window.removeEventListener('resize', updateTooltipPosition);
+    };
+  }, [showTooltip]);
+
   const getSignalColor = (signal?: 'buy' | 'sell' | 'neutral') => {
     switch (signal) {
       case 'buy':
@@ -88,43 +115,76 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({
     }
   };
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-100 relative group">
-      {/* Tooltip */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 bg-gray-900 text-white text-xs rounded-lg w-56 z-10 pointer-events-none">
-        <div className="font-medium mb-0.5">{indicator.name}</div>
-        <div className="text-xs">{getIndicatorDescription(indicator.name)}</div>
-        {showSignal && indicator.signal && (
-          <div className="mt-0.5 text-xs text-gray-300">
-            {getSignalExplanation(indicator.signal, indicator.name)}
-          </div>
-        )}
-        {/* Arrow */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-      </div>
+  const tooltipContent = showTooltip && createPortal(
+    <div 
+      className="fixed transform -translate-x-1/2 -translate-y-full px-3 py-2 bg-gray-900 text-white text-xs rounded-lg w-64 pointer-events-none"
+      style={{ 
+        top: `${tooltipPosition.top}px`, 
+        left: `${tooltipPosition.left}px`,
+        zIndex: 9999
+      }}
+    >
+      <div className="font-medium mb-1">{indicator.name}</div>
+      <div className="text-gray-300">{getIndicatorDescription(indicator.name)}</div>
+      {showSignal && indicator.signal && (
+        <div className="mt-1 text-gray-400 text-[11px]">
+          {getSignalExplanation(indicator.signal, indicator.name)}
+        </div>
+      )}
+      {/* Arrow */}
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+    </div>,
+    document.body
+  );
 
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <h3 className="text-sm font-medium truncate">{indicator.name}</h3>
-          {onToggleVisibility && (
-            <button
-              onClick={onToggleVisibility}
-              className={`w-6 h-3.5 rounded-full transition-colors duration-200 ease-in-out relative ${isVisible ? 'bg-blue-500' : 'bg-gray-300'}`}
-            >
-              <span 
-                className={`block w-3 h-3 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${isVisible ? 'translate-x-3' : 'translate-x-0'}`}
-              />
-            </button>
+  return (
+    <div 
+      ref={cardRef}
+      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100/50 relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {/* Gradient accent bar based on signal */}
+      <div className={`absolute top-0 left-0 w-full h-0.5 ${
+        indicator.signal === 'buy' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+        indicator.signal === 'sell' ? 'bg-gradient-to-r from-red-400 to-red-500' :
+        'bg-gradient-to-r from-yellow-400 to-yellow-500'
+      }`} />
+
+      {tooltipContent}
+
+      <div className="p-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="text-sm font-medium truncate text-gray-700">{indicator.name}</h3>
+            {onToggleVisibility && (
+              <button
+                onClick={onToggleVisibility}
+                className={`w-6 h-3.5 rounded-full transition-colors duration-200 ease-in-out relative ${
+                  isVisible ? 'bg-gradient-to-r from-blue-400 to-blue-500' : 'bg-gray-200'
+                }`}
+              >
+                <span 
+                  className={`absolute top-0 left-0 w-3 h-3 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${
+                    isVisible ? 'translate-x-3' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            )}
+          </div>
+          {showSignal && indicator.signal && (
+            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+              indicator.signal === 'buy' ? 'bg-green-100 text-green-700' :
+              indicator.signal === 'sell' ? 'bg-red-100 text-red-700' :
+              'bg-yellow-100 text-yellow-700'
+            }`}>
+              {indicator.signal.toUpperCase()}
+            </span>
           )}
         </div>
-        {showSignal && indicator.signal && (
-          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getSignalColor(indicator.signal)}`}>
-            {indicator.signal.toUpperCase()}
-          </span>
-        )}
-      </div>
-      <div className="text-base font-semibold mt-0.5" style={{ color: indicator.color }}>
-        {indicator.value.toFixed(2)}
+        <div className="text-base font-semibold mt-1.5" style={{ color: indicator.color }}>
+          {indicator.value.toFixed(2)}
+        </div>
       </div>
     </div>
   );
