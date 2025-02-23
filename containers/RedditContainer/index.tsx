@@ -140,7 +140,7 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
       >
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Reddit Discussions</h2>
-          {state.loading && <LoadingSpinner size="sm" />}
+          {(state.loading || state.aiLoading) && <LoadingSpinner size="sm" />}
         </div>
         <span className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
           ▲
@@ -161,7 +161,9 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
           )}
 
           {state.data && (
-            <RedditDisplay data={state.data} isLoading={state.loading} />
+            <div className={state.loading || state.aiLoading ? 'opacity-50' : ''}>
+              <RedditDisplay data={state.data} isLoading={state.loading || state.aiLoading} />
+            </div>
           )}
         </div>
       </div>
