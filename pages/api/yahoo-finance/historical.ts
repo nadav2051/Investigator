@@ -26,7 +26,7 @@ export default async function handler(
   try {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(endDate.getFullYear() - 1); // Get 1 year of data
+    startDate.setFullYear(endDate.getFullYear() - 2); // Get 2 years of data instead of 1
 
     const result = await yahooFinance.historical(symbol, {
       period1: startDate,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { createChart, ColorType, Time, IChartApi, SeriesOptionsMap, DeepPartial, ChartOptions, ISeriesApi, SeriesType, CandlestickSeries, PriceLineSource } from 'lightweight-charts';
+import { createChart, ColorType, Time, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -21,13 +21,27 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   const [error, setError] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   
+  // Add visibility state for each SMA line
+  const [smaVisibility, setSmaVisibility] = useState({
+    sma20: true,
+    sma50: true,
+    sma150: true,
+    sma200: true
+  });
+  
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
-  const series = useRef<ISeriesApi<keyof SeriesOptionsMap> | null>(null);
+  const candlestickSeries = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const sma20Series = useRef<ISeriesApi<'Line'> | null>(null);
+  const sma50Series = useRef<ISeriesApi<'Line'> | null>(null);
+  const sma150Series = useRef<ISeriesApi<'Line'> | null>(null);
+  const sma200Series = useRef<ISeriesApi<'Line'> | null>(null);
 
   // Initialize chart
   useEffect(() => {
     if (!chartContainerRef.current) return;
+
+    console.log('Starting chart initialization...');
 
     const handleResize = () => {
       if (chartContainerRef.current && chart.current) {
@@ -40,11 +54,12 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     try {
       // Clean up previous chart instance if it exists
       if (chart.current) {
+        console.log('Removing previous chart instance');
         chart.current.remove();
       }
 
-      // Create chart instance with proper type assertion
-      const chartOptions: DeepPartial<ChartOptions> = {
+      // Create chart instance
+      const chartInstance = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
         height: 400,
         layout: {
@@ -62,52 +77,58 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
           timeVisible: true,
           secondsVisible: false,
         },
-      };
-
-      const chartInstance = createChart(chartContainerRef.current, chartOptions);
+      });
 
       try {
-        // Create candlestick series with v5 API
-        const seriesOptions: SeriesOptionsMap['Candlestick'] = {
-          // Candlestick specific options
+        // Create candlestick series
+        const candlestickSeriesInstance = chartInstance.addCandlestickSeries({
           upColor: '#4CAF50',
           downColor: '#FF5252',
           wickUpColor: '#4CAF50',
           wickDownColor: '#FF5252',
           borderVisible: false,
-          wickVisible: true,
-          borderColor: '#000000',
-          borderUpColor: '#4CAF50',
-          borderDownColor: '#FF5252',
-          wickColor: '#000000',
-          // Common series options
-          lastValueVisible: true,
-          title: 'Price',
-          visible: true,
-          priceLineVisible: true,
-          priceLineSource: PriceLineSource.LastBar,
-          priceLineWidth: 1,
-          priceLineColor: '#333333',
-          baseLineVisible: true,
-          baseLineWidth: 1,
-          baseLineColor: '#333333',
-          priceFormat: {
-            type: 'price',
-            precision: 2,
-            minMove: 0.01,
-          }
-        };
+        });
 
-        const candlestickSeries = chartInstance.addSeries(CandlestickSeries, seriesOptions);
+        // Create SMA line series
+        const sma20SeriesInstance = chartInstance.addLineSeries({
+          color: '#2196F3',
+          lineWidth: 2,
+          title: 'SMA 20',
+          visible: smaVisibility.sma20,
+        });
+
+        const sma50SeriesInstance = chartInstance.addLineSeries({
+          color: '#9C27B0',
+          lineWidth: 2,
+          title: 'SMA 50',
+          visible: smaVisibility.sma50,
+        });
+
+        const sma150SeriesInstance = chartInstance.addLineSeries({
+          color: '#FF9800',
+          lineWidth: 2,
+          title: 'SMA 150',
+          visible: smaVisibility.sma150,
+        });
+
+        const sma200SeriesInstance = chartInstance.addLineSeries({
+          color: '#F44336',
+          lineWidth: 2,
+          title: 'SMA 200',
+          visible: smaVisibility.sma200,
+        });
 
         chart.current = chartInstance;
-        series.current = candlestickSeries;
+        candlestickSeries.current = candlestickSeriesInstance;
+        sma20Series.current = sma20SeriesInstance;
+        sma50Series.current = sma50SeriesInstance;
+        sma150Series.current = sma150SeriesInstance;
+        sma200Series.current = sma200SeriesInstance;
 
         window.addEventListener('resize', handleResize);
       } catch (error) {
-        const seriesError = error as Error;
-        console.error('Failed to create candlestick series:', seriesError);
-        throw seriesError;
+        console.error('Failed to create series:', error);
+        throw error;
       }
     } catch (err) {
       console.error('Failed to initialize chart:', err);
@@ -119,19 +140,47 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
       if (chart.current) {
         chart.current.remove();
         chart.current = null;
-        series.current = null;
+        candlestickSeries.current = null;
+        sma20Series.current = null;
+        sma50Series.current = null;
+        sma150Series.current = null;
+        sma200Series.current = null;
       }
     };
-  }, [searchQuery]); // Reinitialize chart when searchQuery changes
+  }, [searchQuery, smaVisibility]);
+
+  // Toggle visibility handler
+  const handleToggleVisibility = (smaType: keyof typeof smaVisibility) => {
+    setSmaVisibility(prev => {
+      const newVisibility = { ...prev, [smaType]: !prev[smaType] };
+      const series = {
+        sma20: sma20Series.current,
+        sma50: sma50Series.current,
+        sma150: sma150Series.current,
+        sma200: sma200Series.current
+      }[smaType];
+      
+      if (series) {
+        series.applyOptions({ visible: newVisibility[smaType] });
+      }
+      
+      return newVisibility;
+    });
+  };
 
   // Fetch and update data
   useEffect(() => {
     const fetchData = async () => {
       if (!searchQuery) {
         setData(null);
-        if (series.current) {
-          series.current.setData([]);
+        if (candlestickSeries.current) {
+          candlestickSeries.current.setData([]);
         }
+        [sma20Series, sma50Series, sma150Series, sma200Series].forEach(series => {
+          if (series.current) {
+            series.current.setData([]);
+          }
+        });
         return;
       }
 
@@ -156,8 +205,8 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
 
         // Wait for chart to be initialized
         setTimeout(() => {
-          if (series.current && processedData.prices) {
-            const chartData: ChartData[] = processedData.prices.map((price) => ({
+          if (candlestickSeries.current && processedData.prices) {
+            const chartData = processedData.prices.map((price) => ({
               time: price.timestamp / 1000 as Time,
               open: price.open,
               high: price.high,
@@ -166,21 +215,40 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
             }));
 
             try {
-              series.current.setData(chartData);
+              // Set candlestick data
+              candlestickSeries.current.setData(chartData);
+
+              // Set SMA data for all lines
+              const setLineData = (
+                series: React.RefObject<ISeriesApi<'Line'> | null>,
+                values: number[] | undefined,
+                period: number
+              ) => {
+                if (series.current && values) {
+                  const data = processedData.prices.slice(period - 1).map((price, index) => ({
+                    time: price.timestamp / 1000 as Time,
+                    value: values[index] || price.close
+                  }));
+                  series.current.setData(data);
+                }
+              };
+
+              setLineData(sma20Series, processedData.sma20?.values, 20);
+              setLineData(sma50Series, processedData.sma50?.values, 50);
+              setLineData(sma150Series, processedData.sma150?.values, 150);
+              setLineData(sma200Series, processedData.sma200?.values, 200);
 
               if (chart.current) {
                 chart.current.timeScale().fitContent();
               }
             } catch (error) {
-              const chartError = error as Error;
-              console.error('Error updating chart:', chartError);
+              console.error('Error updating chart:', error);
             }
           }
         }, 0);
       } catch (error) {
-        const err = error as Error;
-        console.error('Failed to fetch data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Failed to fetch data:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -255,9 +323,34 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
               <div ref={chartContainerRef} className="w-full h-[400px] mb-4" />
               {data && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.sma20 && <IndicatorCard indicator={data.sma20} />}
-                  {data.sma50 && <IndicatorCard indicator={data.sma50} />}
-                  {data.sma200 && <IndicatorCard indicator={data.sma200} />}
+                  {data.sma20 && (
+                    <IndicatorCard
+                      indicator={data.sma20}
+                      onToggleVisibility={() => handleToggleVisibility('sma20')}
+                      isVisible={smaVisibility.sma20}
+                    />
+                  )}
+                  {data.sma50 && (
+                    <IndicatorCard
+                      indicator={data.sma50}
+                      onToggleVisibility={() => handleToggleVisibility('sma50')}
+                      isVisible={smaVisibility.sma50}
+                    />
+                  )}
+                  {data.sma150 && (
+                    <IndicatorCard
+                      indicator={data.sma150}
+                      onToggleVisibility={() => handleToggleVisibility('sma150')}
+                      isVisible={smaVisibility.sma150}
+                    />
+                  )}
+                  {data.sma200 && (
+                    <IndicatorCard
+                      indicator={data.sma200}
+                      onToggleVisibility={() => handleToggleVisibility('sma200')}
+                      isVisible={smaVisibility.sma200}
+                    />
+                  )}
                   {data.ema20 && <IndicatorCard indicator={data.ema20} />}
                   {data.rsi && <IndicatorCard indicator={data.rsi} />}
                   

@@ -11,12 +11,13 @@ interface HistoricalDataPoint {
 }
 
 const calculateSMA = (prices: number[], period: number): TechnicalIndicator => {
-  const sma = SMA.calculate({ period, values: prices });
-  const latestValue = sma[sma.length - 1];
+  const smaValues = SMA.calculate({ period, values: prices });
+  const latestValue = smaValues[smaValues.length - 1];
   
   return {
     name: `SMA ${period}`,
     value: latestValue,
+    values: smaValues,
     signal: prices[prices.length - 1] > latestValue ? 'buy' : 'sell',
     color: '#2196F3'
   };
@@ -138,6 +139,7 @@ export const calculateIndicators = (historicalData: HistoricalDataPoint[]): Tech
     })),
     sma20: calculateSMA(prices, 20),
     sma50: calculateSMA(prices, 50),
+    sma150: calculateSMA(prices, 150),
     sma200: calculateSMA(prices, 200),
     ema20: calculateEMA(prices, 20),
     rsi: calculateRSI(prices),

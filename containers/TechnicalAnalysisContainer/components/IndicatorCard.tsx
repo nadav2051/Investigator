@@ -4,6 +4,8 @@ import { TechnicalIndicator } from '../types';
 interface IndicatorCardProps {
   indicator: TechnicalIndicator;
   showSignal?: boolean;
+  onToggleVisibility?: () => void;
+  isVisible?: boolean;
 }
 
 const getIndicatorDescription = (name: string): string => {
@@ -71,7 +73,9 @@ const getSignalExplanation = (signal: 'buy' | 'sell' | 'neutral', indicatorName:
 
 const IndicatorCard: React.FC<IndicatorCardProps> = ({
   indicator,
-  showSignal = true
+  showSignal = true,
+  onToggleVisibility,
+  isVisible = true
 }) => {
   const getSignalColor = (signal?: 'buy' | 'sell' | 'neutral') => {
     switch (signal) {
@@ -100,7 +104,19 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({
       </div>
 
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold">{indicator.name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">{indicator.name}</h3>
+          {onToggleVisibility && (
+            <button
+              onClick={onToggleVisibility}
+              className={`w-8 h-5 rounded-full transition-colors duration-200 ease-in-out relative ${isVisible ? 'bg-blue-500' : 'bg-gray-300'}`}
+            >
+              <span 
+                className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${isVisible ? 'translate-x-3.5' : 'translate-x-0.5'}`}
+              />
+            </button>
+          )}
+        </div>
         {showSignal && indicator.signal && (
           <span className={`px-2 py-1 rounded-full text-sm font-medium ${getSignalColor(indicator.signal)}`}>
             {indicator.signal.toUpperCase()}

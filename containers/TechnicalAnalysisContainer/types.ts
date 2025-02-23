@@ -1,6 +1,7 @@
 export interface TechnicalIndicator {
   name: string;
   value: number;
+  values?: number[];  // Array of values for plotting
   signal?: 'buy' | 'sell' | 'neutral';
   color?: string;
 }
@@ -19,6 +20,7 @@ export interface TechnicalAnalysisData {
   // Moving Averages
   sma20?: TechnicalIndicator;
   sma50?: TechnicalIndicator;
+  sma150?: TechnicalIndicator;
   sma200?: TechnicalIndicator;
   ema20?: TechnicalIndicator;
 
