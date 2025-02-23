@@ -17,6 +17,8 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
     data: null
   });
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   useEffect(() => {
     if (!searchQuery) {
       setState({ loading: false, error: null, data: null });
@@ -55,26 +57,38 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   }
 
   return (
-    <div className="p-4 border rounded-lg shadow-sm bg-white">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Stock Information</h2>
-        {state.loading && <LoadingSpinner size="sm" />}
+    <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">Stock Information</h2>
+          {state.loading && <LoadingSpinner size="sm" />}
+        </div>
+        <span className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
+          ▲
+        </span>
       </div>
 
-      {state.loading && !state.data && (
-        <LoadingOverlay message={`Loading data for ${searchQuery.toUpperCase()}...`} />
-      )}
+      <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>
+        <div className="p-4 border-t">
+          {state.loading && !state.data && (
+            <LoadingOverlay message={`Loading data for ${searchQuery.toUpperCase()}...`} />
+          )}
 
-      {state.error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          <div className="font-medium">Error</div>
-          <div className="text-sm">{state.error}</div>
+          {state.error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+              <div className="font-medium">Error</div>
+              <div className="text-sm">{state.error}</div>
+            </div>
+          )}
+
+          {state.data && (
+            <StockDisplay data={state.data} isLoading={state.loading} />
+          )}
         </div>
-      )}
-
-      {state.data && (
-        <StockDisplay data={state.data} isLoading={state.loading} />
-      )}
+      </div>
     </div>
   );
 };

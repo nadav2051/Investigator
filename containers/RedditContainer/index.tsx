@@ -3,6 +3,7 @@ import type { ContainerProps } from '../../types/container';
 import { RedditData, fetchRedditData } from './api';
 import RedditDisplay from './components/RedditDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [state, setState] = useState<{
@@ -16,6 +17,8 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
     error: null,
     data: null
   });
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     if (!searchQuery) {
@@ -130,23 +133,38 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   }
 
   return (
-    <div className="p-4 border rounded-lg shadow-sm bg-white">
-      <h2 className="text-xl font-semibold mb-4">Reddit Discussions</h2>
-
-      {state.loading && !state.data && (
-        <LoadingOverlay message={`Loading Reddit data for ${searchQuery.toUpperCase()}...`} />
-      )}
-
-      {state.error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="font-medium text-red-700">Error Loading Reddit Data</div>
-          <div className="text-sm text-red-600 mt-1">{state.error}</div>
+    <div className="border rounded-lg shadow-sm bg-white overflow-hidden">
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">Reddit Discussions</h2>
+          {state.loading && <LoadingSpinner size="sm" />}
         </div>
-      )}
+        <span className={`transform transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
+          ▲
+        </span>
+      </div>
 
-      {state.data && (
-        <RedditDisplay data={state.data} isLoading={state.loading} />
-      )}
+      <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'h-0 overflow-hidden' : ''}`}>
+        <div className="p-4 border-t">
+          {state.loading && !state.data && (
+            <LoadingOverlay message={`Loading Reddit data for ${searchQuery.toUpperCase()}...`} />
+          )}
+
+          {state.error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="font-medium text-red-700">Error Loading Reddit Data</div>
+              <div className="text-sm text-red-600 mt-1">{state.error}</div>
+            </div>
+          )}
+
+          {state.data && (
+            <RedditDisplay data={state.data} isLoading={state.loading} />
+          )}
+        </div>
+      </div>
     </div>
   );
 };
