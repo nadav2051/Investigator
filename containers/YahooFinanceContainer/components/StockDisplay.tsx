@@ -66,32 +66,79 @@ const SectionLoading: React.FC = () => (
 const AnalystRatings: React.FC<{ ratings: NonNullable<StockData['analystRatings']>; currency: string }> = ({ ratings, currency }) => {
   const total = ratings.total || 1; // Prevent division by zero
   const getWidth = (count: number) => `${(count / total) * 100}%`;
+  const getConsensus = () => {
+    const buyRatio = (ratings.strongBuy + ratings.buy) / total;
+    const sellRatio = (ratings.strongSell + ratings.sell) / total;
+    
+    if (buyRatio > 0.6) return { text: 'Strong Buy', class: 'bg-green-100 text-green-800' };
+    if (buyRatio > 0.4) return { text: 'Buy', class: 'bg-green-50 text-green-700' };
+    if (sellRatio > 0.6) return { text: 'Strong Sell', class: 'bg-red-100 text-red-800' };
+    if (sellRatio > 0.4) return { text: 'Sell', class: 'bg-red-50 text-red-700' };
+    return { text: 'Hold', class: 'bg-yellow-50 text-yellow-700' };
+  };
+  
+  const consensus = getConsensus();
   
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>Strong Sell</span>
-        <span>Strong Buy</span>
-      </div>
-      <div className="h-3 flex rounded-full overflow-hidden bg-gray-100">
-        <div style={{ width: getWidth(ratings.strongSell) }} className="bg-red-500" />
-        <div style={{ width: getWidth(ratings.sell) }} className="bg-red-300" />
-        <div style={{ width: getWidth(ratings.hold) }} className="bg-yellow-400" />
-        <div style={{ width: getWidth(ratings.buy) }} className="bg-green-300" />
-        <div style={{ width: getWidth(ratings.strongBuy) }} className="bg-green-500" />
-      </div>
-      <div className="grid grid-cols-5 text-center text-xs">
-        <div>{ratings.strongSell}</div>
-        <div>{ratings.sell}</div>
-        <div>{ratings.hold}</div>
-        <div>{ratings.buy}</div>
-        <div>{ratings.strongBuy}</div>
-      </div>
-      {ratings.targetPrice && (
-        <div className="text-sm mt-2">
-          <span className="font-medium">Target Price:</span> {formatCurrency(ratings.targetPrice, currency)}
+    <div className="space-y-3">
+      {/* Consensus Badge */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">Consensus</div>
+        <div className={`px-2 py-1 rounded-full text-sm font-medium ${consensus.class}`}>
+          {consensus.text}
         </div>
-      )}
+      </div>
+
+      {/* Distribution Bar */}
+      <div>
+        <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <span>Bearish</span>
+          <span>Bullish</span>
+        </div>
+        <div className="h-3 flex rounded-full overflow-hidden bg-gray-100">
+          <div style={{ width: getWidth(ratings.strongSell) }} className="bg-red-500" title="Strong Sell" />
+          <div style={{ width: getWidth(ratings.sell) }} className="bg-red-300" title="Sell" />
+          <div style={{ width: getWidth(ratings.hold) }} className="bg-yellow-400" title="Hold" />
+          <div style={{ width: getWidth(ratings.buy) }} className="bg-green-300" title="Buy" />
+          <div style={{ width: getWidth(ratings.strongBuy) }} className="bg-green-500" title="Strong Buy" />
+        </div>
+      </div>
+
+      {/* Detailed Breakdown */}
+      <div className="grid grid-cols-5 gap-1 text-center bg-gray-50 rounded-lg p-2">
+        <div className="text-xs">
+          <div className="font-medium text-red-700">{ratings.strongSell}</div>
+          <div className="text-gray-500 text-[10px]">Strong Sell</div>
+        </div>
+        <div className="text-xs">
+          <div className="font-medium text-red-600">{ratings.sell}</div>
+          <div className="text-gray-500 text-[10px]">Sell</div>
+        </div>
+        <div className="text-xs">
+          <div className="font-medium text-yellow-600">{ratings.hold}</div>
+          <div className="text-gray-500 text-[10px]">Hold</div>
+        </div>
+        <div className="text-xs">
+          <div className="font-medium text-green-600">{ratings.buy}</div>
+          <div className="text-gray-500 text-[10px]">Buy</div>
+        </div>
+        <div className="text-xs">
+          <div className="font-medium text-green-700">{ratings.strongBuy}</div>
+          <div className="text-gray-500 text-[10px]">Strong Buy</div>
+        </div>
+      </div>
+
+      {/* Total Analysts & Target Price */}
+      <div className="flex items-center justify-between text-sm pt-1">
+        <div className="text-gray-600">
+          Based on {total} analyst{total !== 1 ? 's' : ''}
+        </div>
+        {ratings.targetPrice && (
+          <div className="font-medium">
+            Target: {formatCurrency(ratings.targetPrice, currency)}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
