@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { createChart, ColorType, Time, IChartApi, SeriesOptionsMap, DeepPartial, ChartOptions } from 'lightweight-charts';
+import { createChart, ColorType, Time, IChartApi, SeriesOptionsMap, DeepPartial, ChartOptions, ISeriesApi, SeriesType, CandlestickSeries, PriceLineSource } from 'lightweight-charts';
 import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -23,13 +23,11 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
-  const series = useRef<any>(null);
+  const series = useRef<ISeriesApi<keyof SeriesOptionsMap> | null>(null);
 
   // Initialize chart
   useEffect(() => {
-    if (!chartContainerRef.current || chart.current) return;
-
-    console.log('Initializing chart...');
+    if (!chartContainerRef.current) return;
 
     const handleResize = () => {
       if (chartContainerRef.current && chart.current) {
@@ -40,6 +38,11 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
     };
 
     try {
+      // Clean up previous chart instance if it exists
+      if (chart.current) {
+        chart.current.remove();
+      }
+
       // Create chart instance with proper type assertion
       const chartOptions: DeepPartial<ChartOptions> = {
         width: chartContainerRef.current.clientWidth,
@@ -63,23 +66,49 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
 
       const chartInstance = createChart(chartContainerRef.current, chartOptions);
 
-      console.log('Chart instance created successfully');
+      try {
+        // Create candlestick series with v5 API
+        const seriesOptions: SeriesOptionsMap['Candlestick'] = {
+          // Candlestick specific options
+          upColor: '#4CAF50',
+          downColor: '#FF5252',
+          wickUpColor: '#4CAF50',
+          wickDownColor: '#FF5252',
+          borderVisible: false,
+          wickVisible: true,
+          borderColor: '#000000',
+          borderUpColor: '#4CAF50',
+          borderDownColor: '#FF5252',
+          wickColor: '#000000',
+          // Common series options
+          lastValueVisible: true,
+          title: 'Price',
+          visible: true,
+          priceLineVisible: true,
+          priceLineSource: PriceLineSource.LastBar,
+          priceLineWidth: 1,
+          priceLineColor: '#333333',
+          baseLineVisible: true,
+          baseLineWidth: 1,
+          baseLineColor: '#333333',
+          priceFormat: {
+            type: 'price',
+            precision: 2,
+            minMove: 0.01,
+          }
+        };
 
-      // Create candlestick series with type assertion
-      const candlestickSeries = (chartInstance as any).addCandlestickSeries({
-        upColor: '#4CAF50',
-        downColor: '#FF5252',
-        borderVisible: false,
-        wickUpColor: '#4CAF50',
-        wickDownColor: '#FF5252',
-      });
+        const candlestickSeries = chartInstance.addSeries(CandlestickSeries, seriesOptions);
 
-      console.log('Candlestick series created successfully');
+        chart.current = chartInstance;
+        series.current = candlestickSeries;
 
-      chart.current = chartInstance;
-      series.current = candlestickSeries;
-
-      window.addEventListener('resize', handleResize);
+        window.addEventListener('resize', handleResize);
+      } catch (error) {
+        const seriesError = error as Error;
+        console.error('Failed to create candlestick series:', seriesError);
+        throw seriesError;
+      }
     } catch (err) {
       console.error('Failed to initialize chart:', err);
       setError('Failed to initialize chart: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -93,7 +122,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         series.current = null;
       }
     };
-  }, []);
+  }, [searchQuery]); // Reinitialize chart when searchQuery changes
 
   // Fetch and update data
   useEffect(() => {
@@ -106,53 +135,50 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         return;
       }
 
-      console.log(`Fetching data for ${searchQuery}...`);
       setIsLoading(true);
       setError(null);
 
       try {
         const response = await fetch(`/api/yahoo-finance/historical?symbol=${searchQuery}`);
+        
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
 
         const historicalData = await response.json();
-        console.log('Historical data received:', historicalData?.length, 'data points');
 
         if (!historicalData || historicalData.length === 0) {
           throw new Error('No historical data received');
         }
 
         const processedData = calculateIndicators(historicalData);
-        console.log('Processed data:', {
-          sma20: processedData.sma20?.value,
-          rsi: processedData.rsi?.value,
-          macd: processedData.macd?.macdLine.value,
-          prices: processedData.prices?.length
-        });
-
         setData(processedData);
 
-        if (series.current && processedData.prices) {
-          const chartData: ChartData[] = processedData.prices.map((price) => ({
-            time: price.timestamp / 1000 as Time,
-            open: price.open,
-            high: price.high,
-            low: price.low,
-            close: price.close,
-          }));
+        // Wait for chart to be initialized
+        setTimeout(() => {
+          if (series.current && processedData.prices) {
+            const chartData: ChartData[] = processedData.prices.map((price) => ({
+              time: price.timestamp / 1000 as Time,
+              open: price.open,
+              high: price.high,
+              low: price.low,
+              close: price.close,
+            }));
 
-          console.log('Setting chart data:', chartData.length, 'points');
-          series.current.setData(chartData);
+            try {
+              series.current.setData(chartData);
 
-          // Fit content after setting data
-          if (chart.current) {
-            chart.current.timeScale().fitContent();
+              if (chart.current) {
+                chart.current.timeScale().fitContent();
+              }
+            } catch (error) {
+              const chartError = error as Error;
+              console.error('Error updating chart:', chartError);
+            }
           }
-        } else {
-          console.warn('Series not available or no price data');
-        }
-      } catch (err) {
+        }, 0);
+      } catch (error) {
+        const err = error as Error;
         console.error('Failed to fetch data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -226,7 +252,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
                   <LoadingSpinner size="lg" />
                 </div>
               )}
-              <div ref={chartContainerRef} className={`w-full h-[400px] mb-4 ${isLoading && !data ? 'hidden' : ''}`} />
+              <div ref={chartContainerRef} className="w-full h-[400px] mb-4" />
               {data && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.sma20 && <IndicatorCard indicator={data.sma20} />}
