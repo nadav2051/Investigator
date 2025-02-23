@@ -26,7 +26,6 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   const sma50Series = useRef<ISeriesApi<'Line'> | null>(null);
   const sma150Series = useRef<ISeriesApi<'Line'> | null>(null);
   const sma200Series = useRef<ISeriesApi<'Line'> | null>(null);
-  const smaData = useRef<Record<string, { time: Time; value: number }[]>>({});
 
   // Initialize chart
   useEffect(() => {
@@ -109,9 +108,6 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   }, [searchQuery]);
 
   const handleToggleVisibility = (smaType: keyof typeof smaVisibility) => {
-    const chartInstance = chart.current;
-    if (!chartInstance) return;
-
     setSmaVisibility(prev => {
       const newVisibility = { ...prev, [smaType]: !prev[smaType] };
       const series = {
@@ -120,104 +116,81 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
         sma150: sma150Series,
         sma200: sma200Series
       }[smaType];
-      
-      const colors = {
-        sma20: '#2196F3',
-        sma50: '#9C27B0',
-        sma150: '#FF9800',
-        sma200: '#F44336'
-      };
 
-      if (!prev[smaType]) {
-        const newSeries = chartInstance.addLineSeries({
-          color: colors[smaType],
-          lineWidth: 2,
-          title: `SMA ${smaType.slice(3)}`,
-          priceLineVisible: false,
-          lastValueVisible: false,
+      if (series.current) {
+        series.current.applyOptions({
+          visible: !prev[smaType]
         });
-        
-        if (smaData.current[smaType]) {
-          newSeries.setData(smaData.current[smaType]);
-        }
-        
-        series.current = newSeries;
-      } else if (series.current) {
-        chartInstance.removeSeries(series.current);
-        series.current = null;
       }
-      
+
       return newVisibility;
     });
   };
 
+  const fetchData = async () => {
+    if (!searchQuery) {
+      setData(null);
+      if (candlestickSeries.current) candlestickSeries.current.setData([]);
+      [sma20Series, sma50Series, sma150Series, sma200Series].forEach(series => {
+        if (series.current) series.current.setData([]);
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/yahoo-finance/historical?symbol=${searchQuery}`);
+      if (!response.ok) throw new Error('Failed to fetch data');
+
+      const historicalData = await response.json();
+      if (!historicalData?.length) throw new Error('No historical data received');
+
+      const processedData = calculateIndicators(historicalData);
+      setData(processedData);
+
+      if (candlestickSeries.current && processedData.prices) {
+        const chartData = processedData.prices.map(price => ({
+          time: price.timestamp / 1000 as Time,
+          open: price.open,
+          high: price.high,
+          low: price.low,
+          close: price.close,
+        }));
+
+        candlestickSeries.current.setData(chartData);
+
+        const setLineData = (
+          series: React.RefObject<ISeriesApi<'Line'> | null>,
+          values: number[] | undefined,
+          period: number
+        ) => {
+          if (series.current && values) {
+            const data = processedData.prices.slice(period - 1).map((price, index) => ({
+              time: price.timestamp / 1000 as Time,
+              value: values[index] || price.close
+            }));
+            series.current.setData(data);
+          }
+        };
+
+        setLineData(sma20Series, processedData.sma20?.values, 20);
+        setLineData(sma50Series, processedData.sma50?.values, 50);
+        setLineData(sma150Series, processedData.sma150?.values, 150);
+        setLineData(sma200Series, processedData.sma200?.values, 200);
+
+        if (chart.current) chart.current.timeScale().fitContent();
+      }
+    } catch (error) {
+      console.error('Data fetch error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!searchQuery) {
-        setData(null);
-        if (candlestickSeries.current) candlestickSeries.current.setData([]);
-        [sma20Series, sma50Series, sma150Series, sma200Series].forEach(series => {
-          if (series.current) series.current.setData([]);
-        });
-        smaData.current = {};
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`/api/yahoo-finance/historical?symbol=${searchQuery}`);
-        if (!response.ok) throw new Error('Failed to fetch data');
-
-        const historicalData = await response.json();
-        if (!historicalData?.length) throw new Error('No historical data received');
-
-        const processedData = calculateIndicators(historicalData);
-        setData(processedData);
-
-        if (candlestickSeries.current && processedData.prices) {
-          const chartData = processedData.prices.map(price => ({
-            time: price.timestamp / 1000 as Time,
-            open: price.open,
-            high: price.high,
-            low: price.low,
-            close: price.close,
-          }));
-
-          candlestickSeries.current.setData(chartData);
-
-          const setLineData = (
-            series: React.RefObject<ISeriesApi<'Line'> | null>,
-            values: number[] | undefined,
-            period: number,
-            smaType: keyof typeof smaVisibility
-          ) => {
-            if (series.current && values) {
-              const data = processedData.prices.slice(period - 1).map((price, index) => ({
-                time: price.timestamp / 1000 as Time,
-                value: values[index] || price.close
-              }));
-              series.current.setData(data);
-              smaData.current[smaType] = data;
-            }
-          };
-
-          setLineData(sma20Series, processedData.sma20?.values, 20, 'sma20');
-          setLineData(sma50Series, processedData.sma50?.values, 50, 'sma50');
-          setLineData(sma150Series, processedData.sma150?.values, 150, 'sma150');
-          setLineData(sma200Series, processedData.sma200?.values, 200, 'sma200');
-
-          if (chart.current) chart.current.timeScale().fitContent();
-        }
-      } catch (error) {
-        console.error('Data fetch error:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, [searchQuery]);
 
