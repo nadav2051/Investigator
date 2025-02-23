@@ -97,7 +97,7 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
           )}
 
           {state.data && (
-            <div className={state.loading ? 'opacity-50' : ''}>
+            <div className={`max-h-[800px] overflow-y-auto ${state.loading ? 'opacity-50' : ''}`}>
               <StockDisplay data={state.data} isLoading={state.loading} />
             </div>
           )}

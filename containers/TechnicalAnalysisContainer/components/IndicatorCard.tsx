@@ -89,13 +89,13 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 border border-gray-200 relative group">
+    <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-100 relative group">
       {/* Tooltip */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg w-64 z-10 pointer-events-none">
-        <div className="font-medium mb-1">{indicator.name}</div>
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1.5 bg-gray-900 text-white text-xs rounded-lg w-56 z-10 pointer-events-none">
+        <div className="font-medium mb-0.5">{indicator.name}</div>
         <div className="text-xs">{getIndicatorDescription(indicator.name)}</div>
         {showSignal && indicator.signal && (
-          <div className="mt-1 text-xs text-gray-300">
+          <div className="mt-0.5 text-xs text-gray-300">
             {getSignalExplanation(indicator.signal, indicator.name)}
           </div>
         )}
@@ -103,27 +103,27 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
       </div>
 
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold">{indicator.name}</h3>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <h3 className="text-sm font-medium truncate">{indicator.name}</h3>
           {onToggleVisibility && (
             <button
               onClick={onToggleVisibility}
-              className={`w-8 h-5 rounded-full transition-colors duration-200 ease-in-out relative ${isVisible ? 'bg-blue-500' : 'bg-gray-300'}`}
+              className={`w-6 h-3.5 rounded-full transition-colors duration-200 ease-in-out relative ${isVisible ? 'bg-blue-500' : 'bg-gray-300'}`}
             >
               <span 
-                className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${isVisible ? 'translate-x-3.5' : 'translate-x-0.5'}`}
+                className={`block w-3 h-3 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${isVisible ? 'translate-x-3' : 'translate-x-0'}`}
               />
             </button>
           )}
         </div>
         {showSignal && indicator.signal && (
-          <span className={`px-2 py-1 rounded-full text-sm font-medium ${getSignalColor(indicator.signal)}`}>
+          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getSignalColor(indicator.signal)}`}>
             {indicator.signal.toUpperCase()}
           </span>
         )}
       </div>
-      <div className="text-2xl font-bold" style={{ color: indicator.color }}>
+      <div className="text-base font-semibold mt-0.5" style={{ color: indicator.color }}>
         {indicator.value.toFixed(2)}
       </div>
     </div>

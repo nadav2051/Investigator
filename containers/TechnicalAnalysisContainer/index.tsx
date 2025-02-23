@@ -254,63 +254,69 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
                   <LoadingSpinner size="lg" />
                 </div>
               )}
-              <div ref={chartContainerRef} className="w-full h-[400px] mb-4" />
-              {data && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.sma20 && (
-                    <IndicatorCard
-                      indicator={data.sma20}
-                      onToggleVisibility={() => handleToggleVisibility('sma20')}
-                      isVisible={smaVisibility.sma20}
-                    />
-                  )}
-                  {data.sma50 && (
-                    <IndicatorCard
-                      indicator={data.sma50}
-                      onToggleVisibility={() => handleToggleVisibility('sma50')}
-                      isVisible={smaVisibility.sma50}
-                    />
-                  )}
-                  {data.sma150 && (
-                    <IndicatorCard
-                      indicator={data.sma150}
-                      onToggleVisibility={() => handleToggleVisibility('sma150')}
-                      isVisible={smaVisibility.sma150}
-                    />
-                  )}
-                  {data.sma200 && (
-                    <IndicatorCard
-                      indicator={data.sma200}
-                      onToggleVisibility={() => handleToggleVisibility('sma200')}
-                      isVisible={smaVisibility.sma200}
-                    />
-                  )}
-                  {data.ema20 && <IndicatorCard indicator={data.ema20} />}
-                  {data.rsi && <IndicatorCard indicator={data.rsi} />}
-                  
-                  {data.macd && (
-                    <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold mb-3">MACD</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <IndicatorCard indicator={data.macd.macdLine} />
-                        <IndicatorCard indicator={data.macd.signalLine} />
-                        <IndicatorCard indicator={data.macd.histogram} />
-                      </div>
+              <div className="h-[800px] flex flex-col">
+                <div ref={chartContainerRef} className="w-full h-[400px] flex-shrink-0" />
+                {data && (
+                  <div className="flex-1 overflow-y-auto px-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 py-4">
+                      {data.sma20 && (
+                        <IndicatorCard
+                          indicator={data.sma20}
+                          onToggleVisibility={() => handleToggleVisibility('sma20')}
+                          isVisible={smaVisibility.sma20}
+                        />
+                      )}
+                      {data.sma50 && (
+                        <IndicatorCard
+                          indicator={data.sma50}
+                          onToggleVisibility={() => handleToggleVisibility('sma50')}
+                          isVisible={smaVisibility.sma50}
+                        />
+                      )}
+                      {data.sma150 && (
+                        <IndicatorCard
+                          indicator={data.sma150}
+                          onToggleVisibility={() => handleToggleVisibility('sma150')}
+                          isVisible={smaVisibility.sma150}
+                        />
+                      )}
+                      {data.sma200 && (
+                        <IndicatorCard
+                          indicator={data.sma200}
+                          onToggleVisibility={() => handleToggleVisibility('sma200')}
+                          isVisible={smaVisibility.sma200}
+                        />
+                      )}
+                      {data.ema20 && <IndicatorCard indicator={data.ema20} />}
+                      {data.rsi && <IndicatorCard indicator={data.rsi} />}
                     </div>
-                  )}
 
-                  {data.bollingerBands && (
-                    <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold mb-3">Bollinger Bands</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <IndicatorCard indicator={data.bollingerBands.upper} />
-                        <IndicatorCard indicator={data.bollingerBands.middle} showSignal={false} />
-                        <IndicatorCard indicator={data.bollingerBands.lower} />
+                    {/* MACD Section */}
+                    {data.macd && (
+                      <div className="bg-gray-50 p-3 rounded-lg mb-2">
+                        <h3 className="text-sm font-medium mb-2">MACD</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <IndicatorCard indicator={data.macd.macdLine} />
+                          <IndicatorCard indicator={data.macd.signalLine} />
+                          <IndicatorCard indicator={data.macd.histogram} />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+
+                    {/* Bollinger Bands Section */}
+                    {data.bollingerBands && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h3 className="text-sm font-medium mb-2">Bollinger Bands</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <IndicatorCard indicator={data.bollingerBands.upper} />
+                          <IndicatorCard indicator={data.bollingerBands.middle} showSignal={false} />
+                          <IndicatorCard indicator={data.bollingerBands.lower} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

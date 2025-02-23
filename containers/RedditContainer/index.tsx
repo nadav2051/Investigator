@@ -173,7 +173,7 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
           )}
 
           {state.data && (
-            <div className={state.loading || state.aiLoading ? 'opacity-50' : ''}>
+            <div className={`max-h-[800px] overflow-y-auto ${state.loading || state.aiLoading ? 'opacity-50' : ''}`}>
               <RedditDisplay data={state.data} isLoading={state.loading || state.aiLoading} />
             </div>
           )}
