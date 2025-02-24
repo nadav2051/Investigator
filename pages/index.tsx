@@ -10,9 +10,9 @@ import type { ContainerComponent } from '../types/container';
 // Register all available containers
 const containers: ContainerComponent[] = [
   YahooFinanceConfig,
+  RedditConfig,
   FundamentalAnalysisConfig,
   TechnicalAnalysisConfig,
-  RedditConfig,
   // Add more containers here as they're created
 ];
 
