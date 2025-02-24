@@ -4,6 +4,7 @@ import { TechnicalAnalysisData } from './types';
 import { calculateIndicators } from './utils';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import ContainerHeader from '../../components/ContainerHeader';
+import ContainerEmptyState from '../../components/ContainerEmptyState';
 import IndicatorCard from './components/IndicatorCard';
 import type { ContainerProps } from '../../types/container';
 import { AskAI } from '../../components/AskAI';
@@ -207,14 +208,7 @@ const TechnicalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) =
   }, [isCollapsed]);
 
   if (!searchQuery) {
-    return (
-      <div className="p-4 border rounded-lg shadow-sm bg-white">
-        <h2 className="text-xl font-semibold mb-4">Technical Analysis</h2>
-        <div className="text-gray-500 text-center py-8">
-          Enter a stock symbol to view technical analysis
-        </div>
-      </div>
-    );
+    return <ContainerEmptyState title="Technical Analysis" message="Enter a stock symbol to view technical analysis" />;
   }
 
   return (

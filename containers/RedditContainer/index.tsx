@@ -5,6 +5,7 @@ import RedditDisplay from './components/RedditDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ContainerHeader from '../../components/ContainerHeader';
+import ContainerEmptyState from '../../components/ContainerEmptyState';
 import { AskAI } from '../../components/AskAI';
 
 const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
@@ -124,14 +125,7 @@ const RedditContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   }, [searchQuery]);
 
   if (!searchQuery) {
-    return (
-      <div className="p-4 border rounded-lg shadow-sm bg-white">
-        <h2 className="text-xl font-semibold mb-4">Reddit Discussions</h2>
-        <div className="text-gray-500 text-center py-8">
-          Enter a stock symbol to view Reddit discussions and sentiment
-        </div>
-      </div>
-    );
+    return <ContainerEmptyState title="Reddit Discussions" message="Enter a stock symbol to view Reddit discussions and sentiment" />;
   }
 
   return (

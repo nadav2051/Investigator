@@ -6,6 +6,7 @@ import StockDisplay from './components/StockDisplay';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import ContainerHeader from '../../components/ContainerHeader';
+import ContainerEmptyState from '../../components/ContainerEmptyState';
 import { AskAI } from '../../components/AskAI';
 
 const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
@@ -48,14 +49,7 @@ const YahooFinanceContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   }, [searchQuery]);
 
   if (!searchQuery) {
-    return (
-      <div className="p-4 border rounded-lg shadow-sm bg-white">
-        <h2 className="text-xl font-semibold mb-4">Stock Information</h2>
-        <div className="text-gray-500 text-center py-8">
-          Enter a stock symbol to view detailed information
-        </div>
-      </div>
-    );
+    return <ContainerEmptyState title="Stock Information" />;
   }
 
   return (

@@ -6,6 +6,7 @@ import FinancialStatementsCard from './components/FinancialStatementsCard';
 import EarningsCard from './components/EarningsCard';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import ContainerHeader from '../../components/ContainerHeader';
+import ContainerEmptyState from '../../components/ContainerEmptyState';
 import { ContainerProps, ContainerComponent } from '../../types/container';
 
 const FundamentalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
@@ -60,14 +61,7 @@ const FundamentalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery })
   }, [searchQuery]);
 
   if (!searchQuery) {
-    return (
-      <div className="p-4 border rounded-lg shadow-sm bg-white">
-        <h2 className="text-xl font-semibold mb-4">Fundamental Analysis</h2>
-        <div className="text-gray-500 text-center py-8">
-          Enter a stock symbol to view detailed information
-        </div>
-      </div>
-    );
+    return <ContainerEmptyState title="Fundamental Analysis" />;
   }
 
   return (
