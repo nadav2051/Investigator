@@ -30,6 +30,10 @@ const EarningsCard: React.FC<EarningsCardProps> = ({ earnings }) => {
   };
 
   const enhancedAnnualEarnings = useMemo(() => {
+    if (!earnings?.annualEarnings?.length) {
+      return [];
+    }
+
     const annualData = earnings.annualEarnings.slice(0, 5).map((earning, index, array) => {
       const currentEPS = Number(earning.reportedEPS);
       const prevEPS = index < array.length - 1 ? Number(array[index + 1].reportedEPS) : null;
@@ -55,7 +59,17 @@ const EarningsCard: React.FC<EarningsCardProps> = ({ earnings }) => {
     });
 
     return annualData;
-  }, [earnings.annualEarnings]);
+  }, [earnings?.annualEarnings]);
+
+  if (!earnings?.quarterlyEarnings?.length && !earnings?.annualEarnings?.length) {
+    return (
+      <div className="bg-white rounded-lg shadow p-3">
+        <div className="text-gray-500 text-center py-4">
+          No earnings data available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-3">
@@ -89,51 +103,57 @@ const EarningsCard: React.FC<EarningsCardProps> = ({ earnings }) => {
 
       <div className="overflow-x-auto">
         {activeTab === 'quarterly' ? (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fiscal Date
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reported
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Est. EPS
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actual EPS
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Surprise %
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {earnings.quarterlyEarnings.slice(0, 8).map((quarter) => (
-                <tr key={quarter.fiscalDateEnding} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {quarter.fiscalDateEnding}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {quarter.reportedDate}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {formatValue(quarter.estimatedEPS)}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {formatValue(quarter.reportedEPS)}
-                  </td>
-                  <td className={`px-3 py-2 whitespace-nowrap text-sm ${
-                    Number(quarter.surprisePercentage) >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {formatPercentage(quarter.surprisePercentage)}
-                  </td>
+          earnings.quarterlyEarnings?.length ? (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fiscal Date
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reported
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Est. EPS
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actual EPS
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Surprise %
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {earnings.quarterlyEarnings.slice(0, 8).map((quarter) => (
+                  <tr key={quarter.fiscalDateEnding} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {quarter.fiscalDateEnding}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {quarter.reportedDate}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {formatValue(quarter.estimatedEPS)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {formatValue(quarter.reportedEPS)}
+                    </td>
+                    <td className={`px-3 py-2 whitespace-nowrap text-sm ${
+                      Number(quarter.surprisePercentage) >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {formatPercentage(quarter.surprisePercentage)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-gray-500 text-center py-4">
+              No quarterly earnings data available
+            </div>
+          )
+        ) : enhancedAnnualEarnings.length ? (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -178,6 +198,10 @@ const EarningsCard: React.FC<EarningsCardProps> = ({ earnings }) => {
               ))}
             </tbody>
           </table>
+        ) : (
+          <div className="text-gray-500 text-center py-4">
+            No annual earnings data available
+          </div>
         )}
       </div>
     </div>

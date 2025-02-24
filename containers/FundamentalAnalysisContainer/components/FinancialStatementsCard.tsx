@@ -30,8 +30,16 @@ const FinancialStatementsCard: React.FC<FinancialStatementsCardProps> = ({
 
   const renderIncomeStatement = () => {
     const reports = activePeriod === 'annual' 
-      ? incomeStatement.annualReports 
-      : incomeStatement.quarterlyReports;
+      ? incomeStatement?.annualReports 
+      : incomeStatement?.quarterlyReports;
+
+    if (!reports || reports.length === 0) {
+      return (
+        <div className="text-gray-500 text-center py-4">
+          No {activePeriod} income statement data available
+        </div>
+      );
+    }
 
     return (
       <div className="overflow-x-auto">
@@ -77,8 +85,16 @@ const FinancialStatementsCard: React.FC<FinancialStatementsCardProps> = ({
 
   const renderBalanceSheet = () => {
     const reports = activePeriod === 'annual'
-      ? balanceSheet.annualReports
-      : balanceSheet.quarterlyReports;
+      ? balanceSheet?.annualReports
+      : balanceSheet?.quarterlyReports;
+
+    if (!reports || reports.length === 0) {
+      return (
+        <div className="text-gray-500 text-center py-4">
+          No {activePeriod} balance sheet data available
+        </div>
+      );
+    }
 
     return (
       <div className="overflow-x-auto">
@@ -124,8 +140,16 @@ const FinancialStatementsCard: React.FC<FinancialStatementsCardProps> = ({
 
   const renderCashFlow = () => {
     const reports = activePeriod === 'annual'
-      ? cashFlow.annualReports
-      : cashFlow.quarterlyReports;
+      ? cashFlow?.annualReports
+      : cashFlow?.quarterlyReports;
+
+    if (!reports || reports.length === 0) {
+      return (
+        <div className="text-gray-500 text-center py-4">
+          No {activePeriod} cash flow data available
+        </div>
+      );
+    }
 
     return (
       <div className="overflow-x-auto">

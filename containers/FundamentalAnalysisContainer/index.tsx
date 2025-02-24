@@ -44,14 +44,32 @@ const FundamentalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery })
           AlphaVantageAPI.getEarnings(searchQuery)
         ]);
 
+        // Check if any of the responses contain an error message (Alpha Vantage specific)
+        if ('Note' in overviewData || 'Information' in overviewData) {
+          throw new Error(overviewData.Note || overviewData.Information || 'API limit reached. Please try again later.');
+        }
+
+        // Validate that we have actual data
+        if (!overviewData.Symbol || !overviewData.Name) {
+          throw new Error('No data available for this symbol');
+        }
+
         setCompanyOverview(overviewData);
         setIncomeStatement(incomeData);
         setBalanceSheet(balanceData);
         setCashFlow(cashFlowData);
         setEarnings(earningsData);
       } catch (err) {
-        setError('Failed to fetch fundamental data. Please try again later.');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch fundamental data. Please try again later.';
+        setError(errorMessage);
         console.error('Error fetching fundamental data:', err);
+        
+        // Reset all data states on error
+        setCompanyOverview(null);
+        setIncomeStatement(null);
+        setBalanceSheet(null);
+        setCashFlow(null);
+        setEarnings(null);
       } finally {
         setLoading(false);
       }
