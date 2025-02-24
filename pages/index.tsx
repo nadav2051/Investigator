@@ -4,13 +4,15 @@ import SearchHistory from '../components/SearchHistory';
 import YahooFinanceConfig from '../containers/YahooFinanceContainer';
 import RedditConfig from '../containers/RedditContainer';
 import TechnicalAnalysisConfig from '../containers/TechnicalAnalysisContainer';
+import { FundamentalAnalysisConfig } from '../containers/FundamentalAnalysisContainer';
 import type { ContainerComponent } from '../types/container';
 
 // Register all available containers
 const containers: ContainerComponent[] = [
   YahooFinanceConfig,
-  RedditConfig,
+  FundamentalAnalysisConfig,
   TechnicalAnalysisConfig,
+  RedditConfig,
   // Add more containers here as they're created
 ];
 
