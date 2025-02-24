@@ -6,7 +6,7 @@ import FinancialStatementsCard from './components/FinancialStatementsCard';
 import EarningsCard from './components/EarningsCard';
 import LoadingOverlay from '../../components/LoadingOverlay';
 import ContainerHeader from '../../components/ContainerHeader';
-import { ContainerProps, ContainerComponent } from '../../types/container';
+import { ContainerProps } from '../../types/container';
 
 const FundamentalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery }) => {
   const [loading, setLoading] = useState(true);
@@ -130,12 +130,5 @@ const FundamentalAnalysisContainer: React.FC<ContainerProps> = ({ searchQuery })
   );
 };
 
-// Export both the component and its metadata
-export const FundamentalAnalysisConfig: ContainerComponent = {
-  title: 'Fundamental Analysis',
-  description: 'Comprehensive fundamental analysis including company overview, financial statements, and earnings data.',
-  Component: FundamentalAnalysisContainer
-};
-
-// Default export for the config
-export default FundamentalAnalysisConfig; 
+// Export the container component
+export default FundamentalAnalysisContainer; 

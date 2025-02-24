@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { FC } from 'react';
 
 export interface ContainerData {
   // Each container can extend this with its specific data structure
@@ -12,5 +12,5 @@ export interface ContainerProps {
 export interface ContainerComponent {
   title: string;
   description: string;
-  Component: React.FC<ContainerProps>;
+  Component: FC<ContainerProps>;
 } 
