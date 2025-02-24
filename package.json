@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.22.0",
+    "@types/react-beautiful-dnd": "^13.1.8",
     "lightweight-charts": "^4.0.1",
     "natural": "^8.0.1",
     "next": "14.0.4",
     "react": "18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "18.2.0",
     "react-markdown": "^10.0.0",
     "snoowrap": "^1.23.0",
