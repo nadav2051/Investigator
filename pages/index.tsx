@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import SearchBar from '../components/SearchBar';
 import SearchHistory from '../components/SearchHistory';
-import YahooFinanceConfig from '../containers/YahooFinanceContainer';
-import RedditConfig from '../containers/RedditContainer';
-import TechnicalAnalysisConfig from '../containers/TechnicalAnalysisContainer';
+import { YahooFinanceConfig } from '../containers/YahooFinanceContainer';
+import { RedditConfig } from '../containers/RedditContainer';
+import { TechnicalAnalysisConfig } from '../containers/TechnicalAnalysisContainer';
 import { FundamentalAnalysisConfig } from '../containers/FundamentalAnalysisContainer';
 import type { ContainerComponent } from '../types/container';
 
